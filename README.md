@@ -32,3 +32,4 @@ open viewer/Japan_Precedent_Constellation.html
 ## Data
 
 `data/Japan.csv` is a machine-learning-ready recoding of the hand-curated `data/Japan_Master.csv` masterfile. See `docs/Japan_User_Guide.md` for the full field dictionary and `docs/Japan_README.md` for source methodology and known limitations -- in particular, many prices/premiums/dates are flagged as estimates and should not be treated as verified facts (see `docs/To-do.md` for the open verification backlog).
+# vault
