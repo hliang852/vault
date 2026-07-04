@@ -1,5 +1,4 @@
-# Japan Special Situations
-
+# Vault - Japan Special Situations Studies 
 A case-based precedent library for Japanese M&A/takeover/activism special situations (2023-2026H1). Built for **qualitative pattern study** -- given a new deal's facts, find comparable historical precedents and see what typically happened. Explicitly not a quantitative trading-signal or predictive model.
 
 ## Status
