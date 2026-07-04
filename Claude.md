@@ -6,18 +6,34 @@
 
 A case-based precedent library for Japanese M&A/takeover/activism special situations (2023–2026H1), built for **qualitative pattern study**, explicitly *not* for quantitative trading signals. The end goal: given a new deal's facts, quickly surface comparable historical precedents and see what typically happened — a "case-law playbook," not a predictive model.
 
-## Files in this project (all in the working directory)
+## How the tool is meant to be used (product vision)
 
-| File | What it is |
+Think of it the way a lawyer thinks about case law, not the way a quant thinks about a model:
+
+1. **Input** — a handful of facts about a new/hypothetical deal (deal structure, industry, regulators likely in play, activist presence, board posture, etc.).
+2. **Retrieval** — the similarity engine (Part 2) surfaces the most comparable historical cases from the 62-deal corpus, using the weighted feature-match scoring already in `precedent_engine.py`.
+3. **Clustering** — those precedents aren't a single flat list; they group into **clusters** representing recognizable deal archetypes/situations (e.g. "board-consent take-private," "hostile bid with late interloper," "cross-border outbound with multi-jurisdiction FDI review"). **A given case can and should belong to more than one cluster** — clustering here is soft/overlapping, not a hard partition, because real deals genuinely have multiple simultaneous characteristics (e.g. Fuji Soft is both a hostile/consentless bid *and* a cross-border-sponsor deal *and* an interloper/lock-up case). Part 2 needs to design for multi-membership from the start, not bolt it on later.
+4. **Output — the scenario playbook.** For each relevant cluster, the tool displays a "probability tree" / scenario playbook: a descriptive map of what actually happened across that cluster's precedents (which resolution mechanisms occurred, how outcomes split, what the regulatory/timeline friction looked like, what debate points recurred). This is **descriptive pattern frequency across comparable precedents, not a predictive probability computed for the new deal** — it does not say "this deal has an X% chance of succeeding." It says "among the N comparable precedents in this cluster, here is the distribution of what happened." This framing must be preserved carefully in any Part 2/3 work so the tool doesn't drift into the predictive-modeling territory ruled out below.
+
+This case-law mental model — precedent retrieval → cluster → scenario playbook, never single-number prediction — is the framing for all of Part 2 and Part 3 work.
+
+## Repo layout
+
+The project is organized as `data/`, `src/`, `docs/`, `output/`, `viewer/` (see `docs/Architecture.md` for the full data-flow diagram — this section is just a pointer, don't duplicate detail here).
+
+| Path | What it is |
 |---|---|
-| `Japan_Master.csv` | Original source: 62 hand-curated landmark Japan M&A/activism situations, 2023–2026H1, free-text/narrative fields. |
-| `Japan_README.md` | Source methodology, conventions, regulatory map, known limitations. |
-| `Japan.csv` | ML/analysis-ready recoding of the master file: every messy field split into `_raw` (original text, untouched) + parsed value + `_is_estimate` flag + boolean/categorical breakdowns. 128 columns, 62 rows. |
-| `Japan_Codebook.csv` | Lookup table for every label-encoded `*_code` column in `Japan.csv`. |
-| `Japan_User_Guide.md` | Full field-by-field dictionary for `Japan.csv`. |
-| `precedent_engine.py` | Python scorer: computes a transparent, rule-based similarity score between every pair of the 62 cases (weighted match on category/industry/structure/regulators/named activists), outputs `precedent_graph_data.json`. |
-| `precedent_graph_data.json` | Computed nodes + edges + weights consumed by the HTML viewer. Regenerate after any edit to `Japan.csv` or to the weights in `precedent_engine.py`. |
-| `Japan_Precedent_Constellation.html` | Self-contained interactive viewer (D3.js force graph). "Explore" mode browses precedent links; "Find Precedent" mode scores a hypothetical new deal against all 62 cases. |
+| `data/Japan_Master.csv` | Original source: 62 hand-curated landmark Japan M&A/activism situations, 2023–2026H1, free-text/narrative fields. |
+| `data/Japan.csv` | ML/analysis-ready recoding of the master file: every messy field split into `_raw` (original text, untouched) + parsed value + `_is_estimate` flag + boolean/categorical breakdowns. 128 columns, 62 rows. |
+| `data/Japan_Codebook.csv` | Lookup table for every label-encoded `*_code` column in `Japan.csv`. |
+| `docs/Japan_README.md` | Source methodology, conventions, regulatory map, known limitations. |
+| `docs/Japan_User_Guide.md` | Full field-by-field dictionary for `Japan.csv`. |
+| `src/explore.py` | Part 1: adaptive data-quality report + visualizations, generated from `data/Japan.csv` into `output/`. |
+| `src/cluster/precedent_engine.py` | Part 2 (pre-existing): computes a transparent, rule-based similarity score between every pair of the 62 cases (weighted match on category/industry/structure/regulators/named activists), outputs `output/precedent_graph_data.json`. Currently a flat top-4-nearest-neighbor graph — the multi-cluster/overlapping-membership design described above is **not yet implemented** here; see `docs/Roadmap.md`. |
+| `output/precedent_graph_data.json` | Computed nodes + edges + weights consumed by the HTML viewer. Regenerate after any edit to `data/Japan.csv` or to the weights in `precedent_engine.py`. Gitignored (regenerable). |
+| `viewer/Japan_Precedent_Constellation.html` | Self-contained interactive viewer (D3.js force graph). "Explore" mode browses precedent links; "Find Precedent" mode scores a hypothetical new deal against all 62 cases. |
+
+**Running trackers (read/update these as work progresses, not this file):** `docs/Architecture.md` (current node/edge/cluster semantics), `docs/Changelog.md` (dated history), `docs/To-do.md` (open manual-verification items), `docs/Roadmap.md` (Part 1/2/3 status — built vs. planned).
 
 ## Key decisions already made (don't re-litigate these without reason)
 
@@ -26,6 +42,7 @@ A case-based precedent library for Japanese M&A/takeover/activism special situat
 3. **This is explicitly not a quant/ML training set.** n=62 is a hand-picked, non-random, precedent-setting sample (survivorship/selection bias by design — these are "the famous ones"). Do not build predictive models on it or represent outputs as statistically validated. It's a comparison/lookup tool.
 4. **Similarity weights in `precedent_engine.py` are a legal/practitioner judgment call, not fitted.** Rare, strong signals (CFIUS review, named activist fund, scheme of arrangement) are weighted higher than near-universal, weak ones (JFTC review, which touches almost every deal). If you disagree with a weight, change the constant — that's expected and the whole point of keeping this rule-based rather than a black box.
 5. **Graph is trimmed to top-4 nearest neighbors per node** (min score threshold 1.5) specifically so the rendered chart stays legible — a complete graph on 62 nodes is a hairball, not an insight. Don't remove this trimming without a reason.
+6. **Clustering must support multi-membership.** Per the product vision above, a case can belong to more than one cluster (a deal can simultaneously be "hostile," "cross-border," and "interloper" archetypes). The current `precedent_engine.py` produces a single flat nearest-neighbor graph, not labeled overlapping clusters — that redesign is Part 2 scope (see `docs/Roadmap.md`), not yet built. Don't assume today's graph already does this.
 
 ## Known data-quality issues to keep in mind
 
@@ -37,13 +54,9 @@ A case-based precedent library for Japanese M&A/takeover/activism special situat
 
 **Do not treat any TBV/estimate-flagged number as fact in written output.** If a user-facing case study cites a specific price or premium, check the `_is_estimate` flag first and caveat accordingly.
 
-## Recommended next steps (not yet done)
+## Recommended next steps
 
-1. **Primary-source verification pass** on the 33 "Medium" + 2 "Low" confidence rows — cross-check against EDINET tender offer registration statements (公開買付届出書) and TDnet filings before relying on any of them in written analysis.
-2. **`situation_id` linking** — currently, multi-bid contests (e.g. Seven & i/Couche-Tard vs. York/Bain; Nidec/Makino vs. MBK/Makino) are separate unlinked rows. Add a field grouping rows that belong to the same underlying situation.
-3. **`precedent_established` field** — a standardized one-sentence extraction of "what rule/norm this deal is the reference case for," pulled from the existing `notes_raw` / `key_debate_points_raw` text (which already contains this informally, just not structured).
-4. **Regulatory timeline overlay** — plot deal announcement dates against actual rule changes (METI Aug 2023 guidelines, TSE reform, FIEA amendment effective 2026/05/01) since deal flow clusters heavily in 2024–2025, right after the guidelines took effect.
-5. If the corpus needs to grow beyond 62 for broader pattern coverage, the natural source is a licensed feed (Bloomberg `MA<GO>`, Refinitiv/LSEG, MARR/RECOF) rather than more manual curation.
+Tracked live in `docs/To-do.md` (manual verification items/decisions) and `docs/Roadmap.md` (Part 1/2/3 status) — check those rather than this file, which is not kept in sync with day-to-day progress. As of the last update to this file, open items include: primary-source verification of "Medium"/"Low" confidence rows, `situation_id` linking for multi-bid contests, a structured `precedent_established` field, a regulatory-timeline overlay, and — per the product vision above — redesigning `precedent_engine.py`'s output to support overlapping cluster membership instead of a single flat neighbor graph.
 
 ## What NOT to do
 

@@ -13,11 +13,12 @@ See `docs/Roadmap.md` for what's planned next, `docs/Architecture.md` for how th
 ## Repo layout
 
 ```
-data/     source CSVs
-src/      Python: explore.py (Part 1), cluster/precedent_engine.py (Part 2)
-viewer/   interactive HTML viewer (Part 3)
-output/   generated figures/reports/graph data (gitignored, regenerable)
-docs/     architecture, changelog, to-do, roadmap, and source data documentation
+data/       source CSVs
+src/        Python: explore.py (Part 1), cluster/precedent_engine.py (Part 2)
+notebooks/  exploratory_analysis.py (Part 1, Colab-openable) -- deeper exploration feeding Part 2's design
+viewer/     interactive HTML viewer (Part 3)
+output/     generated figures/reports/graph data (gitignored, regenerable)
+docs/       architecture, changelog, to-do, roadmap, and source data documentation
 ```
 
 ## Running it
@@ -26,6 +27,7 @@ docs/     architecture, changelog, to-do, roadmap, and source data documentation
 pip install -r requirements.txt
 python src/explore.py                    # data exploration + charts -> output/
 python src/cluster/precedent_engine.py   # precedent graph -> output/precedent_graph_data.json
+python notebooks/exploratory_analysis.py # deeper exploration -- also opens directly in Google Colab
 open viewer/Japan_Precedent_Constellation.html
 ```
 
