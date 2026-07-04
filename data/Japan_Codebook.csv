@@ -1,0 +1,169 @@
+﻿field,code,label
+category_code,1,Activist campaign
+category_code,2,Activist campaign (EGM escalation)
+category_code,3,Activist campaign (control contest defense)
+category_code,4,Activist campaign (proxy fight)
+category_code,5,"Activist campaign (proxy fight, media)"
+category_code,6,Activist campaign (stake unwind + buyback)
+category_code,7,Activist-driven sector consolidation
+category_code,8,Carve-out sale to PE (activist-driven breakup)
+category_code,9,Carve-out sale to PE (from listed parent)
+category_code,10,Competing TOBs (first modern bidding war)
+category_code,11,Cross-border carve-out (inbound purchase of division)
+category_code,12,Cross-border outbound
+category_code,13,Cross-border outbound (asset management)
+category_code,14,Cross-border outbound (chemicals)
+category_code,15,"Cross-border outbound (consortium, aviation leasing)"
+category_code,16,Cross-border outbound (contested politically)
+category_code,17,Cross-border outbound (insurance)
+category_code,18,Cross-border outbound (robotics carve-out)
+category_code,19,Cross-border outbound (scheme)
+category_code,20,Cross-border outbound (tech)
+category_code,21,Cross-border unsolicited proposal (failed) + failed MBO defense
+category_code,22,Group take-private (governance-driven)
+category_code,23,Hostile TOB (withdrawn)
+category_code,24,Hostile TOB defeated by white knight
+category_code,25,Hostile cross-border TOB (won) vs white knight
+category_code,26,MBO (PE-backed)
+category_code,27,MBO (founder + PE)
+category_code,28,MBO (founder family + PE)
+category_code,29,MBO (founder family)
+category_code,30,MBO vs unsolicited strategic counterbid
+category_code,31,MBO/PE take-private
+category_code,32,Merger of equals attempt (failed)
+category_code,33,Minority squeeze-out (parent buy-in)
+category_code,34,PE buyout of listed co. (sponsor exit by trading house)
+category_code,35,"PE take-private (activist-assisted, discount TOB)"
+category_code,36,PE take-private (dual-price structure controversy)
+category_code,37,PE take-private (ex-activist target)
+category_code,38,PE take-private (post-activism)
+category_code,39,PE take-private (recapitalization)
+category_code,40,PE-vs-PE hostile bidding war
+category_code,41,Parent carve-out / PE TOB
+category_code,42,Parent carve-out TOB (sponsor-backed strategic)
+category_code,43,Parent-subsidiary minority buy-in
+category_code,44,Parent-subsidiary minority buy-in (mega)
+category_code,45,Strategic TOB (JV take-private of listed sub)
+category_code,46,Strategic TOB (affiliate consolidation) with price bump
+category_code,47,Strategic TOB (long-gestation parent exit)
+category_code,48,Strategic acquisition proposal (semis)
+category_code,49,"Subsidiary divestiture (PE, special situation)"
+category_code,50,Take-private (PE/consortium)
+category_code,51,"Take-private (state-backed consortium, carve-out of listed sub)"
+category_code,52,Take-private (state-backed fund)
+category_code,53,Third-party TOB for listed subsidiary (parent sells)
+category_code,54,Unsolicited proposal + proxy fights (family office)
+category_code,55,Unsolicited/consentless TOB (domestic strategic)
+category_code,56,White-knight take-private (PE)
+category_code,0,(missing/blank)
+category_group_code,1,Activist campaign
+category_group_code,2,Contested / hostile bid
+category_group_code,3,Cross-border outbound
+category_group_code,4,Other
+category_group_code,5,Parent-subsidiary / carve-out
+category_group_code,6,Strategic TOB
+category_group_code,7,Take-private / MBO
+category_group_code,0,(missing/blank)
+industry_code,1,Air conditioning
+industry_code,2,Aircraft leasing
+industry_code,3,Asset management
+industry_code,4,Auto parts (clutches)
+industry_code,5,Auto parts / forklifts (Toyota Group nucleus)
+industry_code,6,Automotive
+industry_code,7,Banking
+industry_code,8,Broadcasting / real estate
+industry_code,9,Cold-chain logistics
+industry_code,10,Convenience stores
+industry_code,11,Cosmetics / supplements
+industry_code,12,Department stores / retail real estate
+industry_code,13,Digital printing equipment
+industry_code,14,Drugstores
+industry_code,15,Education / nursing care
+industry_code,16,Electrical engineering/facilities
+industry_code,17,Electronic materials (solder resist)
+industry_code,18,Electronics design software (EDA)
+industry_code,19,Electronics logistics (3PL)
+industry_code,20,Elevators/escalators
+industry_code,21,Gas utility (large real-estate book)
+industry_code,22,Glass (architectural/auto/solar)
+industry_code,23,HR / staffing
+industry_code,24,HR benefits platform
+industry_code,25,IT / digital comics (MechaComic)
+industry_code,26,IT services
+industry_code,27,IT services / software
+industry_code,28,Industrial conglomerate / electronics
+industry_code,29,Industrial robotics
+industry_code,30,Life insurance run-off consolidator
+industry_code,31,Machine tools
+industry_code,32,Marine civil engineering
+industry_code,33,Mobile phone distribution
+industry_code,34,NTC thermistors (sensors)
+industry_code,35,Network engineering / SI
+industry_code,36,Oil refining / energy
+industry_code,37,Outdoor/camping consumer
+industry_code,38,PCs (Mouse Computer) / electronics retail
+industry_code,39,Pharmaceuticals
+industry_code,40,Pharmaceuticals (OTC)
+industry_code,41,Precision instruments (positioning/eyecare)
+industry_code,42,Printing / electronics materials
+industry_code,43,Rail / holder of ~20% Oriental Land
+industry_code,44,Real estate
+industry_code,45,Restaurants / franchising
+industry_code,46,Retail / convenience stores
+industry_code,47,Semiconductor materials (photoresists)
+industry_code,48,Semiconductor packaging/substrates
+industry_code,49,Semiconductors (Arm server CPUs)
+industry_code,50,Semiconductors (power/analog)
+industry_code,51,Semiconductors (timing)
+industry_code,52,Specialty (re)insurance
+industry_code,53,Specialty chemicals
+industry_code,54,Steel
+industry_code,55,Supermarkets / GMS
+industry_code,56,Tech investment holding
+industry_code,57,Trading house (sogo shosha)
+industry_code,58,US homebuilding
+industry_code,0,(missing/blank)
+industry_group_code,1,Automotive / mobility
+industry_group_code,2,Energy / resources
+industry_group_code,3,Financials (banking/insurance)
+industry_group_code,4,HR / staffing / services
+industry_group_code,5,Healthcare / pharma
+industry_group_code,6,Industrials / machinery
+industry_group_code,7,Other
+industry_group_code,8,Retail / consumer
+industry_group_code,9,Semiconductors / electronics
+industry_group_code,10,Technology / software
+industry_group_code,0,(missing/blank)
+target_exchange_code,1,3141 JP
+target_exchange_code,2,ASX
+target_exchange_code,3,Carve-out (ABB: ABBN SW)
+target_exchange_code,4,Carve-out (parent 6723 JP)
+target_exchange_code,5,NYSE
+target_exchange_code,6,NYSE (re-IPO'd 2025)
+target_exchange_code,7,TSE Prime
+target_exchange_code,8,TSE Standard
+target_exchange_code,9,Unlisted
+target_exchange_code,0,(missing/blank)
+outcome_code_num,1,Concluded
+outcome_code_num,2,Failed
+outcome_code_num,3,Other/Unclear
+outcome_code_num,0,(missing/blank)
+board_recommendation_code_num,1,Engaged
+board_recommendation_code_num,2,For
+board_recommendation_code_num,3,Mixed
+board_recommendation_code_num,4,No formal recommendation
+board_recommendation_code_num,5,Opposed
+board_recommendation_code_num,6,Other
+board_recommendation_code_num,7,Unclear/TBV
+board_recommendation_code_num,0,(missing/blank)
+squeeze_out_mechanism_code_num,1,Merger
+squeeze_out_mechanism_code_num,2,Scheme of arrangement
+squeeze_out_mechanism_code_num,3,Share consolidation
+squeeze_out_mechanism_code_num,4,Share exchange
+squeeze_out_mechanism_code_num,5,Unclear/TBV
+squeeze_out_mechanism_code_num,0,(missing/blank)
+verification_confidence_code_num,1,High confidence
+verification_confidence_code_num,2,Low - needs verification
+verification_confidence_code_num,3,Medium - needs verification
+verification_confidence_code_num,4,Verified via current search (Jul 2026)
+verification_confidence_code_num,0,(missing/blank)
