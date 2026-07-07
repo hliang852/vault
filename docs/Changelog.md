@@ -2,6 +2,16 @@
 
 Dated log of changes made to this repo and why. Newest entries first.
 
+## 2026-07-07 -- Part 2 follow-up: community-detection tuning, redundancy consolidation
+
+Resolves the two open items from 2026-07-06 (5)'s to-do list; see `docs/To-do.md` 2026-07-07 for the full investigation and numbers.
+
+- **Root-caused the degenerate k-clique community detection.** It was both causes at once: `MIN_SCORE=1.5` (reused from the viewer's edge-trimming logic) let 79.7% of all 1,891 pairs "connect," and k-clique percolation on this corpus's feature-sharing structure always converges to one dominant community regardless of threshold (verified via a grid search to threshold=9.0) -- a few small, genuinely rare-feature-driven satellite communities exist, but there's no clean way to subdivide the "ordinary deal" majority the same way. Added a dedicated `COMMUNITY_MIN_SCORE=7.0` constant in `precedent_engine.py`, independent of the viewer's `MIN_SCORE=1.5` (unchanged). Now produces 5 communities (sizes [16,3,3,3,3], 26/62 nodes covered) instead of 1 giant blob.
+- **Reviewed all 9 flagged high-Jaccard pairs using lift-over-independence, not just raw Jaccard.** Lift separates genuine correlation from the artifact of two common features both being common (which inflates Jaccard regardless of any real relationship). Only 3 of 9 pairs showed real above-base-rate correlation; the rest, including the highest-Jaccard pair (`timeline_post_meti_2023_guideline` x `timeline_post_tse_reform_2023`, 0.93), were ~1.0-1.09x lift -- essentially base-rate, not redundancy.
+- **Added `data/Japan.csv` columns (137 -> 139)**: `has_dual_antitrust_review` (`has_JFTC` AND `has_DOJ_FTC_HSR`, both true; 39/62) replacing those two as separately-scored features (genuine 1.37-1.54x correlation; `has_JFTC`'s true set was an exact subset of `has_DOJ_FTC_HSR`'s), weight 0.5 (down from a combined 1.1). `timeline_post_2023_reforms` (`timeline_post_meti_2023_guideline` AND `timeline_post_tse_reform_2023`, both true; 53/62) replacing those two, weight 0.1 -- consolidated despite lift showing this was mostly a base-rate artifact, per an explicit maintainer caution call rather than the statistical evidence alone. All four original columns remain in `Japan.csv` as individual descriptive fields; only their scoring in `pair_score()` was consolidated. `structure_has_TOB` was deliberately left unconsolidated and unchanged (0.5) -- it's a distinct deal-structure fact, not a regulatory one, even though it correlates with the antitrust flags.
+- **Re-ran the Jaccard check post-consolidation**: down from 9 flagged pairs to 2 (both already reviewed/accepted -- `structure_has_TOB`x`has_dual_antitrust_review` kept deliberately, `toehold_present_flag`x`timeline_post_2023_reforms` already assessed as base-rate).
+- **`timeline_post_fiea_2026_amendment`**: reviewed and confirmed no action -- stays at weight 0.1, contributing 0 to every score until the corpus includes deals announced after 2026-05-01.
+
 ## 2026-07-06 (5) -- Part 2: axis-tag clustering, community-detection cross-check, new weighted features
 
 Implements the core Part 2 redesign called for in `Claude.md`'s product vision: precedents should group into **overlapping clusters**, feeding a future descriptive scenario-playbook UI (Part 3, not built yet). This session builds the data layer for that; no UI consumes it yet.

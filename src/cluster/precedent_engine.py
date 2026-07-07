@@ -59,13 +59,11 @@ BOOLEAN_FEATURES = {
     'structure_has_scheme': 1.5,       # rare structure -> strong signal when shared
     'has_activist_involvement': 0.75,
     'acquirer_is_unlisted': 0.5,
-    'has_JFTC': 0.1,                   # near-universal, weak signal
     'has_CFIUS': 2.0,                  # rare, very strong signal when shared
     'has_METI': 1.5,
     'has_FEFTA': 1.5,
     'has_China_SAMR': 1.5,
     'has_EU_regulator': 1.5,
-    'has_DOJ_FTC_HSR': 1.0,
     'has_FIRB': 1.5,
 
     # -- added this session (2026-07-06), weights grounded in real rarity
@@ -74,11 +72,21 @@ BOOLEAN_FEATURES = {
     'multi_jurisdiction': 0.5,          # num_regulators>=2 true in 29/62 -- moderately common
     'toehold_present_flag': 0.25,       # pre-existing column, true in 44/62 -- common, so a light weight
     'notes_flags_precedent_setting': 0.5,  # true in 7/62 -- rare but a soft/subjective text flag, kept modest
-    'timeline_post_meti_2023_guideline': 0.1,  # true in 53/62 -- near-universal, weak signal like has_JFTC
-    'timeline_post_tse_reform_2023': 0.1,      # true in 57/62 -- near-universal, weak signal
     'timeline_post_fiea_2026_amendment': 0.1,  # true in 0/62 today (amendment effective 2026-05-01,
     # after this corpus's cutoff) -- contributes nothing yet, will start mattering once the corpus
-    # includes deals announced after that date.
+    # includes deals announced after that date. No action taken this session (reviewed and agreed).
+
+    # -- consolidated 2026-07-07, replacing 4 separately-scored features that
+    #    an empirical Jaccard/lift review found were double-counting correlated
+    #    facts (see docs/Architecture.md and docs/To-do.md for the full analysis):
+    'has_dual_antitrust_review': 0.5,   # was has_JFTC (0.1) + has_DOJ_FTC_HSR (1.0) scored separately;
+    # lift analysis showed these correlate above base rate (1.37-1.54x) -- has_JFTC's True set was an exact
+    # subset of has_DOJ_FTC_HSR's in this corpus, so consolidated to "both true" (39/62), weight roughly
+    # split the difference rather than keep double-scoring one underlying "faces antitrust review" fact.
+    'timeline_post_2023_reforms': 0.1,  # was timeline_post_meti_2023_guideline (0.1) + timeline_post_tse_reform_2023
+    # (0.1) scored separately (Jaccard 0.93, though lift was only 1.09x -- mostly a base-rate artifact of both
+    # being common, not genuine redundancy; consolidated anyway per a maintainer caution call). "Both true" (53/62,
+    # same rate as timeline_post_meti_2023_guideline alone, since it was the subset). Same weight tier as before.
 }
 
 # NOTE: instigator_type / lockup_signal_count / activist_signature (see axes.py)
@@ -88,6 +96,11 @@ BOOLEAN_FEATURES = {
 # special_committee_flag, recurring_acquirer_flag, the activist_* match
 # mechanism) -- scoring the composite too would double/triple-count the same
 # underlying fact. They're exposed on each node as descriptive `axes` only.
+#
+# has_JFTC, has_DOJ_FTC_HSR, timeline_post_meti_2023_guideline, and
+# timeline_post_tse_reform_2023 remain in Japan.csv as individual columns,
+# just no longer separately scored in pair_score() -- and so no longer appear
+# in each node's `features` dict below (built directly from this dict).
 
 NAMED_ACTIVIST_COLS = [c for c in df.columns if c.startswith('activist_')]
 ACTIVIST_MATCH_WEIGHT = 2.5  # same specific fund named = very strong precedent link
@@ -172,30 +185,50 @@ edge_list = [
 # 2b. Overlapping community detection (secondary/diagnostic cross-check
 #     on the axis-tag clustering above, NOT the primary cluster definition
 #     -- see docs/Architecture.md). Built on a full, untrimmed pairwise
-#     graph at the same MIN_SCORE threshold as the viewer graph, reusing
-#     pair_score() so the notion of "similar" stays identical everywhere.
+#     graph, reusing pair_score() so the notion of "similar" stays the
+#     same computation as everywhere else in this file.
+#
+#     COMMUNITY_MIN_SCORE is deliberately its OWN threshold, separate from
+#     MIN_SCORE above. MIN_SCORE=1.5 was calibrated as a floor so the
+#     viewer's top-4 trim doesn't force a meaningless neighbor -- reusing
+#     it here made 79.7% of all 1,891 pairs "connected" (31.6% from just 6
+#     near-universal features alone), which is why k=3 was degenerate (one
+#     giant community covering all 62 nodes). Reviewed 2026-07-07: even at
+#     much higher thresholds, k-clique percolation on this corpus always
+#     leaves one dominant "generic-deal" community plus a few small (3-6
+#     node) satellite communities of genuinely rare-feature-driven cases --
+#     that split is real signal (most deals ARE fairly ordinary; only a
+#     handful share truly distinctive combinations), not a parameter bug.
+#     COMMUNITY_MIN_SCORE=7.0/k=3 was chosen for a more balanced, useful
+#     split (dominant community ~35% of nodes, several small distinct ones)
+#     over the alternative of raising coverage at the cost of one node
+#     ending up in almost every corner of the graph.
 # ---------------------------------------------------------------
+COMMUNITY_MIN_SCORE = 7.0
+K_CLIQUE = 3
+
 G = nx.Graph()
 G.add_nodes_from(df['deal_id'])
 for i in range(n):
     for j in range(i + 1, n):
         s, _ = pair_score(i, j)
-        if s >= MIN_SCORE:
+        if s >= COMMUNITY_MIN_SCORE:
             G.add_edge(df.loc[i, 'deal_id'], df.loc[j, 'deal_id'], weight=s)
 
-K_CLIQUE = 3
 communities = [sorted(c) for c in k_clique_communities(G, K_CLIQUE)]
 communities.sort(key=lambda c: (-len(c), c[0]))
 
-print(f"k-clique communities (k={K_CLIQUE}, MIN_SCORE={MIN_SCORE}): {len(communities)} found")
+print(f"k-clique communities (k={K_CLIQUE}, COMMUNITY_MIN_SCORE={COMMUNITY_MIN_SCORE}): {len(communities)} found")
 if communities:
     print("sizes:", [len(c) for c in communities])
+    n_covered = len(set().union(*communities))
+    print(f"nodes covered: {n_covered}/{n} ({n - n_covered} not in any community)")
     largest_frac = len(communities[0]) / n
     if largest_frac >= 0.8:
         print(f"WARNING: largest community covers {largest_frac:.0%} of all nodes -- likely degenerate, "
-              f"consider raising K_CLIQUE or MIN_SCORE.")
+              f"consider raising K_CLIQUE or COMMUNITY_MIN_SCORE.")
 else:
-    print("WARNING: zero communities found -- K_CLIQUE or MIN_SCORE may need adjustment.")
+    print("WARNING: zero communities found -- K_CLIQUE or COMMUNITY_MIN_SCORE may need adjustment.")
 
 community_ids_by_deal = {deal_id: [] for deal_id in df['deal_id']}
 for idx, members in enumerate(communities):

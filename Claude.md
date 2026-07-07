@@ -24,7 +24,7 @@ The project is organized as `data/`, `src/`, `docs/`, `output/`, `viewer/` (see 
 | Path | What it is |
 |---|---|
 | `data/Japan_Master.csv` | Original source: 62 hand-curated landmark Japan M&A/activism situations, 2023–2026H1, free-text/narrative fields. |
-| `data/Japan.csv` | ML/analysis-ready recoding of the master file: every messy field split into `_raw` (original text, untouched) + parsed value + `_is_estimate` flag + boolean/categorical breakdowns. 137 columns, 62 rows (see `docs/Changelog.md` for the running history of schema additions). |
+| `data/Japan.csv` | ML/analysis-ready recoding of the master file: every messy field split into `_raw` (original text, untouched) + parsed value + `_is_estimate` flag + boolean/categorical breakdowns. 139 columns, 62 rows (see `docs/Changelog.md` for the running history of schema additions). |
 | `data/Japan_Codebook.csv` | Lookup table for every label-encoded `*_code` column in `Japan.csv`. |
 | `docs/Japan_README.md` | Source methodology, conventions, regulatory map, known limitations. |
 | `docs/Japan_User_Guide.md` | Full field-by-field dictionary for `Japan.csv`. |
