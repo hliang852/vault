@@ -14,26 +14,29 @@ Three-part plan for this project. Status reflects what has actually been built, 
 
 ## Part 2 -- Clustering / similarity weights
 
-**Status: pre-existing, not modified this session.**
+**Status: overlapping clustering built (2026-07-06).** Weighted similarity scoring and the top-4-nearest-neighbor trimmed graph were pre-existing; this session added the multi-membership clustering layer plus 7 new weighted features (see `Architecture.md` for the full detail, weights, and rarity numbers).
 
-`src/cluster/precedent_engine.py` already implements a rule-based, weighted pairwise similarity score and a top-4-nearest-neighbor trimmed graph (see `Architecture.md` for the current weights and trimming rule). This session only fixed its file paths after moving it into `src/cluster/`.
+**What was actually built:**
+- **Axis tags (`src/cluster/axes.py`, primary clustering mechanism).** 7 rule-based, hand-defined descriptive dimensions per case (consent, price-discovery type, regulatory friction, precedent-value text, instigator identity, lock-up signal count, activist signature) -- ported from the notebook's Lenses 1/2/3/4/5/6/8. A case naturally carries several axis values simultaneously, satisfying `Claude.md`'s overlapping/multi-membership requirement. These are the intended basis for the scenario-playbook UI's cluster groupings -- **not yet consumed by any UI** (that's Part 3, still planned below).
+- **k-clique community detection (secondary/diagnostic cross-check, not primary).** A full untrimmed pairwise graph at `MIN_SCORE=1.5`, `networkx.algorithms.community.k_clique_communities(k=3)`. On the current 62-case corpus this is **degenerate** (1 community containing all 62 nodes) -- flagged in `To-do.md` as needing parameter tuning, not silently changed.
+- **7 new weighted features** added to `pair_score()`'s `BOOLEAN_FEATURES`, each weight grounded in the feature's real true-rate in the corpus (`price_was_bumped_bool`, `multi_jurisdiction`, `toehold_present_flag`, `notes_flags_precedent_setting`, and the three `timeline_post_*` columns). See `Architecture.md` for the table.
+- **`short_name`** per node (compact display label; feeds the Part 3 viewer fix below).
 
-**Product vision (see `Claude.md`), not yet built:** the tool should support querying with a new deal's facts, retrieving comparable precedents, grouping them into **overlapping clusters** (a case can belong to more than one -- clustering here is soft, not a hard partition), and displaying a descriptive "scenario playbook" per cluster (what actually happened across that cluster's precedents -- resolution mechanisms, outcome mix, regulatory/timeline friction -- never a predictive probability for the new deal). The current engine produces a single flat nearest-neighbor graph with no cluster labels or multi-membership -- this is a real redesign, not an extension.
-
-**Planned, not yet done:**
-- Design overlapping/multi-membership clustering (the core Part 2 redesign described above).
-- Review the current hand-set weights (`CATEGORICAL_FEATURES`, `BOOLEAN_FEATURES`, `ACTIVIST_MATCH_WEIGHT` in `precedent_engine.py`) against what `src/explore.py` and `notebooks/exploratory_analysis.py` reveal -- in particular the feature-rarity table (Section 3), the co-occurrence/redundancy check (Section 4, flags features that may be double-counting the same signal), and the pairwise-comparability coverage table (Section 5, flags features whose weight is currently close to moot because both sides of a pair are rarely populated simultaneously).
-- Decide whether `TOP_K` (4) and `MIN_SCORE` (1.5) still produce a legible, useful graph as more cases or features are added, informed by the degree-distribution/hub-node diagnostics in Section 6 of the notebook.
-- Decide how the seven interpretive lenses (consent, price-discovery, regulatory friction, precedent-value, instigator-identity, deal-certainty, activist-signature) map onto cluster definitions, if at all.
+**Still not built / open:**
+- A UI that actually reads the axis tags / community IDs and renders them as browsable overlapping clusters with a scenario-playbook view -- this session built the underlying data layer (`axes`, `community_ids`, `communities` in `output/precedent_graph_data.json`) but no viewer surface for it yet. That's Part 3 scope, see below.
+- Tune `K_CLIQUE`/the community-detection `MIN_SCORE` given the degenerate result above.
+- Review the *pre-existing* hand-set weights (`CATEGORICAL_FEATURES`, `ACTIVIST_MATCH_WEIGHT`) against `src/explore.py` / `notebooks/exploratory_analysis.py`'s rarity and coverage diagnostics -- not done this session, still open.
+- Decide whether `TOP_K` (4) and `MIN_SCORE` (1.5) still produce a legible, useful viewer graph as more cases or features are added.
 - No decisions have been made yet on changing spatial-layout logic (currently D3's force simulation, unmodified) -- any change here is Part 3 scope, tracked below.
 
 ## Part 3 -- Interactive viewer & report generation
 
-**Status: viewer pre-existing, not modified this session (moved only). Report generation does not exist yet.**
+**Status: one small label fix this session (2026-07-06); scenario-playbook UI and report generation do not exist yet.**
 
-`viewer/Japan_Precedent_Constellation.html` already renders the Part 2 graph with Explore and Find-Precedent modes (see `Architecture.md`).
+`viewer/Japan_Precedent_Constellation.html` already renders the Part 2 graph with Explore and Find-Precedent modes (see `Architecture.md`). This session changed only the on-circle node label from `d.id` to `d.short_name`.
 
 **Planned, not yet done:**
+- **The scenario-playbook UI itself** -- per `Claude.md`'s product vision, browsing a cluster (from the axis tags built in Part 2 this session) and seeing a descriptive breakdown of what happened across its precedents (resolution mechanisms, outcome mix, regulatory/timeline friction, recurring debate points). Part 2 this session produced the underlying data (`axes`, `community_ids`, `communities` in the output JSON) but **no UI reads or displays any of it yet** -- this is still fully open.
 - A build step that regenerates the viewer's embedded `DATA` object from `output/precedent_graph_data.json` automatically, replacing today's manual copy-paste (tracked as an open item in `To-do.md`).
 - Report generation -- no such feature exists yet. Needs scoping: format (PDF/Markdown/HTML), what a "report" contains (single-case brief? cross-case comparison? both?), and whether it's generated from the viewer or as a separate script.
 - Any changes to node/edge visual encoding, spatial layout, or filtering beyond what's already built.

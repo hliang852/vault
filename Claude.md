@@ -24,12 +24,14 @@ The project is organized as `data/`, `src/`, `docs/`, `output/`, `viewer/` (see 
 | Path | What it is |
 |---|---|
 | `data/Japan_Master.csv` | Original source: 62 hand-curated landmark Japan M&A/activism situations, 2023–2026H1, free-text/narrative fields. |
-| `data/Japan.csv` | ML/analysis-ready recoding of the master file: every messy field split into `_raw` (original text, untouched) + parsed value + `_is_estimate` flag + boolean/categorical breakdowns. 128 columns, 62 rows. |
+| `data/Japan.csv` | ML/analysis-ready recoding of the master file: every messy field split into `_raw` (original text, untouched) + parsed value + `_is_estimate` flag + boolean/categorical breakdowns. 137 columns, 62 rows (see `docs/Changelog.md` for the running history of schema additions). |
 | `data/Japan_Codebook.csv` | Lookup table for every label-encoded `*_code` column in `Japan.csv`. |
 | `docs/Japan_README.md` | Source methodology, conventions, regulatory map, known limitations. |
 | `docs/Japan_User_Guide.md` | Full field-by-field dictionary for `Japan.csv`. |
+| `docs/Regulatory_Timeline_Appendix.md` | Substantive background on the three regulatory regimes (METI 2023 guidelines, TSE reform, FIEA amendment) behind the `timeline_post_*` columns — what changed and why it matters, with sourced links. |
 | `src/explore.py` | Part 1: adaptive data-quality report + visualizations, generated from `data/Japan.csv` into `output/`. |
-| `src/cluster/precedent_engine.py` | Part 2 (pre-existing): computes a transparent, rule-based similarity score between every pair of the 62 cases (weighted match on category/industry/structure/regulators/named activists), outputs `output/precedent_graph_data.json`. Currently a flat top-4-nearest-neighbor graph — the multi-cluster/overlapping-membership design described above is **not yet implemented** here; see `docs/Roadmap.md`. |
+| `src/cluster/precedent_engine.py` | Part 2: computes a transparent, rule-based similarity score between every pair of the 62 cases (weighted match on category/industry/structure/regulators/named activists), outputs `output/precedent_graph_data.json`. Also attaches per-case axis tags (`src/cluster/axes.py`) as the primary overlapping-cluster signal and a secondary k-clique community-detection cross-check — see `docs/Architecture.md`. No UI browses these yet; that's Part 3, see `docs/Roadmap.md`. |
+| `src/cluster/axes.py` | Part 2: descriptive per-case "axis" dimensions (consent, price-discovery type, regulatory friction, precedent-value text, instigator identity, lock-up signal count, activist signature) feeding the overlapping-cluster design above, plus a Jaccard co-occurrence helper for double-counting checks. |
 | `output/precedent_graph_data.json` | Computed nodes + edges + weights consumed by the HTML viewer. Regenerate after any edit to `data/Japan.csv` or to the weights in `precedent_engine.py`. Gitignored (regenerable). |
 | `viewer/Japan_Precedent_Constellation.html` | Self-contained interactive viewer (D3.js force graph). "Explore" mode browses precedent links; "Find Precedent" mode scores a hypothetical new deal against all 62 cases. |
 
@@ -56,7 +58,9 @@ The project is organized as `data/`, `src/`, `docs/`, `output/`, `viewer/` (see 
 
 ## Recommended next steps
 
-Tracked live in `docs/To-do.md` (manual verification items/decisions) and `docs/Roadmap.md` (Part 1/2/3 status) — check those rather than this file, which is not kept in sync with day-to-day progress. As of the last update to this file, open items include: primary-source verification of "Medium"/"Low" confidence rows, `situation_id` linking for multi-bid contests, a structured `precedent_established` field, a regulatory-timeline overlay, and — per the product vision above — redesigning `precedent_engine.py`'s output to support overlapping cluster membership instead of a single flat neighbor graph.
+Tracked live in `docs/To-do.md` (manual verification items/decisions) and `docs/Roadmap.md` (Part 1/2/3 status) — check those rather than this file, which is not kept in sync with day-to-day progress. As of the last update to this file, open items include: primary-source verification of "Medium"/"Low" confidence rows, a structured `precedent_established` field, and a regulatory-timeline overlay.
+
+**Part 2's overlapping-clustering layer now exists** (axis tags as the primary multi-membership mechanism, k-clique community detection as a secondary diagnostic cross-check) — see `docs/Architecture.md` for how it works. Part 3's scenario-playbook UI to actually browse those clusters is still not built.
 
 ## What NOT to do
 

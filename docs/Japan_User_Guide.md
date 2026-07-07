@@ -76,6 +76,7 @@ Blank cells mean the source cell was blank/not applicable, or a number/keyword c
 | `initial_offer_price_value/_currency` | The first price mentioned in "Initial Offer / Price Bumps". |
 | `price_bump_count` | Number of price increases, parsed from explicit "(N bumps)" text or by counting "→" arrows in the bump narrative. Blank = could not be determined. |
 | `price_was_bumped` | `True`/`False`, or `Unclear/TBV` when the source only said "TBV" with no bump detail. |
+| `price_was_bumped_bool` | Clean boolean version of `price_was_bumped` (added 2026-07-06): `True` only where that column is literally `True`; `Unclear/TBV` and blank both become `False`. Added because the mixed-type source column is unsafe to feed directly into boolean logic (a non-empty string like `Unclear/TBV` is Python-truthy). Use this one for any flag-style analysis; use `price_was_bumped` when the Unclear/TBV distinction matters. |
 | `initial_offer_price_bumps_raw` | Full original bump narrative — richer than the parsed fields above; read this for deal-specific detail (who bumped, in response to what). |
 | `unaffected_price_value/_currency/_is_estimate/_raw` | Pre-announcement/pre-rumor share price, where the source estimated one. |
 | `premium_pct_value/_is_estimate/_raw` | Headline premium to unaffected price. Note: some source cells describe a premium to a different reference (e.g. "90-day VWAP") in the same string — read `_raw` if the reference point matters. |
@@ -88,6 +89,8 @@ Blank cells mean the source cell was blank/not applicable, or a number/keyword c
 | `special_committee_raw`, `special_committee_flag` | Flag simplified to `Yes` / `No` / `Unclear/TBV` / `Other`. |
 | `competing_bid_raw`, `competing_bid_flag` | `Yes` / `No` / `Unclear/TBV`, based on whether the text describes a rival bid/auction or explicitly says none emerged. |
 | `recurring_acquirer_raw`, `recurring_acquirer_flag` | Whether the acquirer had a prior/serial relationship with the target (`Yes`/`No`/`Unclear/TBV`). |
+| `financial_advisor_target_raw`, `financial_advisor_acquirer_raw` | M&A financial advisor(s) named for the target side and the acquirer side, respectively (added 2026-07-06; pilot batch of 7/62 rows researched from public tender-offer filings/press releases, remaining 55 rows and `JP-003` are `TBV` pending research). Free text, semicolon-separated when multiple firms are named (e.g. distinct advisors to the management team vs. the independent special committee) — not yet split into atomic columns. Always check for `TBV` before citing; do not assume a blank-looking pilot list is exhaustive. |
+| `target_ipo_advisor_raw` | Lead underwriter(s) of the target company's original IPO/listing (added 2026-07-06). Currently `TBV` for all 62 rows — pilot research found this materially harder to verify publicly than M&A advisors (conflicting listing-year and underwriter claims surfaced even for recent IPOs like Benefit One and Outsourcing Inc.), so no row has been populated yet. See `docs/To-do.md` for the decision to hold this column pending better sourcing. |
 | `toehold_raw` | Original text (pre-existing stake, irrevocables, tender agreements). |
 | `toehold_present_flag` | `True` if some toehold/irrevocable arrangement is described (i.e. not blank and not "No toehold"). |
 | `toehold_pct_value`, `toehold_is_estimate` | First percentage figure found in the toehold text, if any (a row can reference more than one party's stake — see `_raw` for full detail). |
@@ -97,10 +100,12 @@ Blank cells mean the source cell was blank/not applicable, or a number/keyword c
 |---|---|
 | `regulator_1_raw/2_raw/3_raw` | Original three regulator-mention columns. |
 | `num_regulators` | Count of the three columns that are non-blank and not "—". |
+| `multi_jurisdiction` | Boolean convenience flag (added 2026-07-06): `num_regulators >= 2`. Mirrors the "regulatory friction" lens in `notebooks/exploratory_analysis.py`. |
 | `has_JFTC`, `has_FSA`, `has_METI`, `has_CFIUS`, `has_FEFTA`, `has_China_SAMR`, `has_EU_regulator`, `has_DOJ_FTC_HSR`, `has_FIRB`, `has_SEC`, `has_Bermuda_BMA`, `has_Broadcast_Act` | Boolean — regulator name/acronym found anywhere across the three regulator cells. |
 | `has_other_foreign_antitrust_or_FDI` | `True` if the regulator text mentions generic "foreign antitrust", "merger control", or "FDI screening" not captured by a named flag above. |
 | `rules_regulations_triggering_review_raw` | Original text (kept whole — usually a dense, deal-specific legal narrative). |
 | `mentions_FIEA`, `mentions_METI_guidelines`, `mentions_Companies_Act`, `mentions_FEFTA`, `mentions_CFIUS`, `mentions_TSE_reform` | Boolean keyword flags on that same text. |
+| `timeline_post_meti_2023_guideline`, `timeline_post_tse_reform_2023`, `timeline_post_fiea_2026_amendment` | Regulatory-timeline overlay (added 2026-07-06). Boolean, derived mechanically from `date_announced` vs. each rule's real-world effective date — **not** a text-mention flag like the `mentions_*` columns above, and not mutually exclusive with them (a deal can mention METI guidelines in its narrative while still predating the actual guideline date, or vice versa). Effective dates used: METI Corporate Takeover Guidelines 2023-08-31, TSE cost-of-capital/PBR reform request 2023-03-31, FIEA mandatory-TOB amendment 2026-05-01 (the last is `True` for zero rows in the current 62-case corpus, since the corpus ends before any post-amendment announcement). |
 
 ### Activism
 | Column | Description |
@@ -119,6 +124,7 @@ Blank cells mean the source cell was blank/not applicable, or a number/keyword c
 | `delisting_date_raw`, `delisting_date`, `delisting_date_precision`, `delisting_date_is_estimate` | Same day/month/year parsing logic as the announcement/completion dates. |
 | `verification_status_raw`, `verification_confidence_code(_num)` | Simplified to `Verified via current search (Jul 2026)`, `High confidence`, `Medium - needs verification`, `Low - needs verification`, `Unclear`. **Treat `Medium`/`Low`/`Unclear` rows as needing primary-source verification before any external use — this mirrors the masterfile's own caveat.** |
 | `notes_raw` | Original analyst notes, unmodified. |
+| `notes_flags_precedent_setting` | Boolean keyword flag on `notes_raw` (added 2026-07-06): `True` if the notes contain (case-insensitive) any of "first", "template", "precedent", "proof-of-concept", "landmark", "signature". Mechanical text flag in the same spirit as `structure_has_*` / `mentions_*` — not a verified judgment that the deal set a precedent. |
 
 ---
 

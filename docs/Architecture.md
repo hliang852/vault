@@ -9,7 +9,8 @@ data/     source CSVs (Japan_Master.csv, Japan.csv, Japan_Codebook.csv, Japan_Wa
 src/
   explore.py            Part 1 -- data exploration & visualization
   cluster/
-    precedent_engine.py Part 2 -- similarity scoring + graph construction
+    precedent_engine.py Part 2 -- similarity scoring + graph construction + community detection
+    axes.py              Part 2 -- descriptive "axis tag" clustering layer + Jaccard co-occurrence helper
 notebooks/
   exploratory_analysis.py   Part 1 -- deeper, Colab-openable exploration feeding Part 2's design
 viewer/
@@ -45,6 +46,7 @@ Adaptive-by-construction so it keeps working if `Japan.csv`'s columns change:
   - `structure_has_*` -> deal-structure mechanism flags
   - `*_is_estimate` -> paired with its value column to compute missingness/estimate rates
   - `*_raw` -> checked for high cardinality (>80% unique) to flag columns that shouldn't be modeled on directly
+  - `timeline_post_*` -> regulatory-timeline overlay flags (added 2026-07-06, see below). Deliberately a distinct prefix from `has_*` so `discover_prefixed_group(df, 'has_')` doesn't sweep these into the regulator-involvement chart -- they're a timing signal, not a regulator-involvement signal.
 - **Guarded anchor columns.** A short list (`deal_id`, `date_announced_year`, `category_group`, `industry_group`, `outcome_code`, `verification_confidence_code`, `deal_size_usd_mn`) drives the core charts. Every reference checks `col in df.columns` first; a missing/renamed anchor skips that chart with a warning rather than crashing the run.
 - **Configurable path**, not hardcoded: `--input` / `--output-dir` CLI args, both resolved relative to the repo root via `pathlib.Path(__file__)` so behavior doesn't depend on the caller's working directory.
 
@@ -75,18 +77,63 @@ Sections, in order:
 
 **Tried and rejected:** a precedent-citation-network lens (mining `notes_raw`/`key_debate_points_raw` for explicit mentions of other cases' company names) was attempted and dropped -- see `Roadmap.md` Part 1 for why.
 
+## `Japan.csv` schema changes
+
+- **2026-07-06 -- regulatory-timeline overlay.** Added `timeline_post_meti_2023_guideline`, `timeline_post_tse_reform_2023`, `timeline_post_fiea_2026_amendment` (boolean, 131 columns total now vs. 128 before). Each is a mechanical comparison of `date_announced` against a rule's real-world effective date (METI Corporate Takeover Guidelines 2023-08-31; TSE cost-of-capital/PBR reform request 2023-03-31; FIEA mandatory-TOB amendment 2026-05-01) -- no new facts introduced, consistent with `Claude.md`'s parsing discipline. Distinct from the pre-existing `mentions_METI_guidelines`/`mentions_TSE_reform`/`mentions_FIEA` columns, which are keyword flags on whether a deal's regulatory-narrative text happens to *mention* these regimes -- the two are not mutually exclusive or redundant. See `docs/Japan_User_Guide.md`'s Regulatory section for the column description and `docs/Regulatory_Timeline_Appendix.md` for the substantive background on each rule change (what it is, what changed, sourced links). Not yet consumed by `precedent_engine.py` or the viewer -- these are descriptive/filterable columns only, not (yet) part of the similarity-score feature set; adding them as weighted features is a Part 2 decision, not made here.
+- **2026-07-06 -- advisor data (pilot batch).** Added `Financial Advisor - Target` / `Financial Advisor - Acquirer` / `Target IPO Advisor` to `data/Japan_Master.csv` (all 62 rows, default `TBV`), then propagated as `financial_advisor_target_raw` / `financial_advisor_acquirer_raw` / `target_ipo_advisor_raw` to `data/Japan.csv` (now 134 columns). This is a deliberate, one-time exception to the "no new facts" discipline in `Claude.md` -- unlike every other column, these are freshly researched from public tender-offer filings and press releases, not parsed from an existing master-file cell. The maintainer decided the exception belongs at the master-file level (research goes into `Japan_Master.csv` first, `Japan.csv` still mechanically derives from it) rather than bolted onto `Japan.csv` directly, to preserve the audit trail. Only a pilot batch of 7 deals (`JP-001, 002, 006, 009, 010, 011` for financial advisors; zero for IPO advisor) were researched and verified before pausing to check in with the maintainer -- see `To-do.md` for what's outstanding and the IPO-advisor sourcing problem encountered. `JP-001` (Toshiba/JIP) was cross-checked against the actual EDINET tender offer statement after web search summaries turned out to materially conflict with each other, which is why that row's advisor text is unusually detailed (distinguishes management-team advisors from the independent Special Committee's advisor).
+- **Decided not to add a `situation_id` linking field** (see `To-do.md`/`Roadmap.md` history) for grouping multi-bid contests (e.g. Seven & i/Couche-Tard vs. York/Bain). Each approach/bid stays its own row/node, and the pre-existing `recurring_acquirer_flag` (see `Japan_User_Guide.md`) is the intended signal for "this deal is a repeat/serial approach" -- no new column needed.
+- **2026-07-06 -- Part 2 weighting pass.** Added `multi_jurisdiction`, `notes_flags_precedent_setting`, `price_was_bumped_bool` (boolean, 137 columns total now vs. 134 before). All three mechanically derived (no new facts): `multi_jurisdiction` = `num_regulators >= 2`; `notes_flags_precedent_setting` = keyword match on `notes_raw` ("first"/"template"/"precedent"/"proof-of-concept"/"landmark"/"signature"); `price_was_bumped_bool` = a clean boolean fix for the mixed-type source `price_was_bumped` column (`True` only where the source is the literal string `'True'`, correcting a bug the existing `bool(value)` scoring pattern would have caused -- see `Japan_User_Guide.md`). Unlike the `timeline_post_*` columns, these three were added specifically to be scored features in `precedent_engine.py` -- see the weighted-features table below.
+
 ## Part 2 -- similarity scoring & graph (`src/cluster/precedent_engine.py`)
 
-Unchanged this session except for path fixes after the file move (now reads `data/Japan.csv` and writes `output/precedent_graph_data.json`, both resolved relative to the repo root).
+**Extended this session (2026-07-06)** with 7 new weighted features, an axis-tag descriptive clustering layer, a secondary community-detection cross-check, and a `short_name` field. The top-4-nearest-neighbor edge graph, its trimming rule, and all pre-existing weights are unchanged.
 
-- **Node semantics** (as rendered in the viewer): size = `deal_size_usd_mn`; color = `category_group`.
+- **Node semantics** (as rendered in the viewer): size = `deal_size_usd_mn`; color = `category_group`; on-circle label = `short_name` (see below; was `deal_id` before this session).
 - **Edge semantics**: a weighted feature-match score between every pair of deals (`pair_score` in `precedent_engine.py`) -- shared `category_group`/`industry_group`/board posture/regulators/named activists each add a hand-set weight (see the `CATEGORICAL_FEATURES`, `BOOLEAN_FEATURES`, `ACTIVIST_MATCH_WEIGHT` constants in that file). Weights are a practitioner judgment call, not fitted.
 - **Graph trimming**: each node keeps only its top-4 nearest neighbors (`TOP_K = 4`) above a minimum score of `1.5` (`MIN_SCORE`), so the rendered graph stays legible on 62 nodes instead of becoming a complete-graph hairball.
 - Edge line thickness / link distance in the viewer scale with the match score (see `viewer/Japan_Precedent_Constellation.html`'s `d3.forceLink(...).distance(...)`).
 
+### New weighted features (added 2026-07-06)
+
+Added to `BOOLEAN_FEATURES`, weight grounded in the feature's actual true-rate in the 62-row corpus (checked empirically before setting the weight, per `Claude.md`'s "not fitted, but not guessed either" convention):
+
+| Feature | True rate (n=62) | Weight | Why |
+|---|---|---|---|
+| `price_was_bumped_bool` | 7/62 (11%) | 1.0 | Rare and a meaningfully distinct price-discovery signal (clean boolean fixing a real bug -- see `Japan_User_Guide.md`) |
+| `multi_jurisdiction` | 29/62 (47%) | 0.5 | Moderately common (`num_regulators>=2`), so a moderate weight |
+| `toehold_present_flag` | 44/62 (71%) | 0.25 | Pre-existing column, common -> light weight when shared |
+| `notes_flags_precedent_setting` | 7/62 (11%) | 0.5 | Rare but a soft/subjective keyword-derived text flag, so kept modest rather than as strong as a hard structural fact |
+| `timeline_post_meti_2023_guideline` | 53/62 (85%) | 0.1 | Near-universal (most of the corpus postdates the 2023 guideline) -- weak signal, same logic as `has_JFTC` |
+| `timeline_post_tse_reform_2023` | 57/62 (92%) | 0.1 | Near-universal -- weak signal |
+| `timeline_post_fiea_2026_amendment` | 0/62 (0%) | 0.1 | Contributes 0 to every score today since the FIEA amendment takes effect 2026-05-01, after this corpus's cutoff; will start mattering once the corpus includes deals announced after that date |
+
+`instigator_type`, `lockup_signal_count`, and `activist_signature` (see axes below) are deliberately **not** added as scored features -- each is a pure recombination of columns already independently scored elsewhere (`category_group`, `has_activist_involvement`, `acquirer_is_unlisted`, `toehold_present_flag`, `special_committee_flag`, `recurring_acquirer_flag`, the activist-match mechanism), so scoring the composite too would double/triple-count the same underlying fact. See the code comment in `precedent_engine.py` above `BOOLEAN_FEATURES`.
+
+### Axis tags (`src/cluster/axes.py`) -- the primary multi-membership clustering layer
+
+Per `Claude.md`'s product vision (a case can belong to more than one cluster), each node's `axes` field is a dict of 7 descriptive, rule-based re-framings of existing columns -- ported from `notebooks/exploratory_analysis.py`'s Lenses 1/2/3/4/5/6/8 into a reusable `compute_axes(row, activist_columns)` function:
+
+- `consent` -- alias of `board_recommendation_code`.
+- `price_discovery_type` -- one of "Single negotiated, no bump", "Bumped, board aligned", "Bumped, board split", "Bidding war (bumped + competing bid)", "MBO with interloper risk", "MBO, single negotiated price", derived from `price_was_bumped_bool` x `board_recommendation_code` x `competing_bid_flag` x `structure_has_MBO`.
+- `regulatory_friction` -- "Multi-jurisdiction" / "Domestic/single-jurisdiction" from `num_regulators`.
+- `precedent_value_text` -- `{'text': notes_raw, 'flagged_precedent_setting': bool}`.
+- `instigator_type` -- Activist-instigated / Sponsor-instigated / Strategic-instigated.
+- `lockup_signal_count` -- 0-3 from `toehold_present_flag` + `special_committee_flag` + `recurring_acquirer_flag`.
+- `activist_signature` -- sorted, comma-joined named funds, or `None`.
+
+These axis values are the intended basis for grouping cases into overlapping archetypes in the Part 3 scenario-playbook UI (not yet built -- see `Roadmap.md`); a case naturally carries several axis values at once, which is exactly the overlapping-membership behavior `Claude.md` requires.
+
+### Community detection (secondary/diagnostic cross-check, not the primary cluster definition)
+
+`precedent_engine.py` also builds a full (untrimmed) pairwise graph -- an edge for every pair scoring >= `MIN_SCORE` (1.5), reusing `pair_score()` so "similar" means the same thing everywhere -- and runs `networkx.algorithms.community.k_clique_communities(G, k=3)` on it. This is explicitly a cross-check against the axis tags above, not a replacement: at `k=3`/`MIN_SCORE=1.5` on the current 62-node corpus it is **degenerate** -- exactly 1 community, containing all 62 nodes, because the graph is dense enough at this threshold that every node reaches every other node through a chain of overlapping triangles. Each node's `community_ids` is currently `[0]` for all 62 cases -- not yet informative. Flagged in `To-do.md` for parameter tuning (raise `K_CLIQUE` and/or `MIN_SCORE` for this specific graph, independent of the viewer's own `MIN_SCORE`) rather than silently changed this session.
+
+### `short_name` (added 2026-07-06)
+
+Each node gets a compact display label for the viewer's on-circle text (the full `target_full_name` cluttered the force-graph layout). Mechanical string cleanup only, no new facts: strip parenthetical content, then iteratively strip a trailing stoplist of generic corporate suffixes (Corporation, Corp., Co., Ltd., Inc., Holdings, Group, Company, etc.), trim trailing punctuation, and fall back to the name's first 3 words if the result is empty. See this session's `Changelog.md` entry for the full before/after table across all 62 rows, manually reviewed before shipping (per this project's "verify before trusting" convention -- a prior text-matching heuristic elsewhere in this project produced bad false positives and was caught this way). A few long names with no parenthetical/suffix to strip (e.g. JP-047 "Macquarie's US & European public asset management business", JP-058 "Renesas Electronics -- timing products business") remain long by design -- there was nothing mechanical to remove.
+
 ## Part 3 -- interactive viewer (`viewer/Japan_Precedent_Constellation.html`)
 
-Unchanged this session (moved only). Self-contained D3.js force-directed graph with two modes:
+**One line changed this session**: the always-visible node label under each circle now renders `d.short_name` instead of `d.id` (deal_id is unchanged everywhere else -- detail panel, search). Otherwise unmodified. Self-contained D3.js force-directed graph with two modes:
 
 - **Explore mode**: browse the precomputed precedent graph; click a node to see its brief and top precedent links with reasons.
 - **Find Precedent mode**: score a hypothetical new deal's facts against all 62 cases using the same weighting scheme.
