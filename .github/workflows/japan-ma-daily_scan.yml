@@ -1,0 +1,53 @@
+name: japan-ma-daily-scan
+on:
+  schedule:
+    - cron: "30 22 * * *"   # 22:30 UTC = 07:30 JST, after prior JP business day
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: japan-ma-data
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: japan-ma
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pandas
+      - name: Track 2 scan (append-only, citation-gated)
+        id: scan
+        env:
+          EDINET_API_KEY: ${{ secrets.EDINET_API_KEY }}
+        run: |
+          python pipeline/scanner.py | tee scan_result.json
+          echo "appended=$(python -c 'import json;print(json.load(open("scan_result.json"))["appended"])')" >> "$GITHUB_OUTPUT"
+      - name: Transform (Japan.csv + dated copy)
+        run: |
+          mkdir -p output
+          python pipeline/transform.py --master data/Japan_Master.csv --outdir output --dated
+          cp output/Japan.csv output/Japan_Codebook.csv data/
+      - name: Commit changes
+        if: steps.scan.outputs.appended != '0'
+        run: |
+          git config user.name "japan-ma-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/ output/
+          git commit -m "daily scan: ${{ steps.scan.outputs.appended }} new record(s) $(date -u +%F)"
+          git push
+      - name: Email alert (new situations landed)
+        if: steps.scan.outputs.appended != '0'
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: |
+          python pipeline/send_notification.py \
+            --summary-json scan_result.json \
+            --attach "output/Japan_$(date -u +%F).csv"

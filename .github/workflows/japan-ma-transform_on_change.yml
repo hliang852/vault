@@ -1,0 +1,31 @@
+name: japan-ma-transform-on-master-change   # auto-trigger: Japan_Master.csv change -> rebuild Japan.csv
+on:
+  push:
+    branches: [main]
+    paths: ["japan-ma/data/Japan_Master.csv"]
+permissions:
+  contents: write
+jobs:
+  transform:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: japan-ma-data
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: japan-ma
+    if: "!contains(github.event.head_commit.message, '[auto-transform]')"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pandas
+      - name: Rebuild Japan.csv + codebook (integrity gates enforced)
+        run: python pipeline/transform.py --master data/Japan_Master.csv --outdir data --dated
+      - name: Commit derived files
+        run: |
+          git config user.name "japan-ma-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/Japan.csv data/Japan_Codebook.csv data/Japan_*.csv || true
+          git diff --cached --quiet || git commit -m "[auto-transform] rebuild Japan.csv from master change"
+          git push

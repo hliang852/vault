@@ -1,0 +1,148 @@
+﻿field,code,label
+category_code,0,(blank)
+category_code,1,Activist campaign
+category_code,2,Activist campaign (EGM escalation)
+category_code,3,Activist campaign (board overhaul — proxy victory)
+category_code,4,Activist campaign (board seat — constructive)
+category_code,5,Activist campaign (buyback/governance — first campaign)
+category_code,6,Activist campaign (constructive)
+category_code,7,Activist campaign (control contest defense)
+category_code,8,Activist campaign (governance/succession)
+category_code,9,Activist campaign (proxy fight)
+category_code,10,"Activist campaign (proxy fight, media)"
+category_code,11,Activist campaign (spin-off thesis — rejected)
+category_code,12,Activist campaign (stake unwind + buyback)
+category_code,13,Activist campaign → white-knight takeover (campaign-to-M&A conversion)
+category_code,14,Activist counter-TOB (defeated a live MBO — first of its kind)
+category_code,15,Activist-driven sector consolidation
+category_code,16,Carve-out sale to PE (activist-driven breakup)
+category_code,17,Carve-out sale to PE (from listed parent)
+category_code,18,Competing TOB contest (board switched to higher bid)
+category_code,19,Competing TOBs (first modern bidding war)
+category_code,20,Contested domestic merger (founder-family opposition)
+category_code,21,Contested four-way auction → employee buyout (governance landmark)
+category_code,22,Contested share-exchange merger (vote-integrity court fight)
+category_code,23,Corporate carve-out (post-activism portfolio pruning)
+category_code,24,Cross-border carve-out (inbound purchase of division)
+category_code,25,Cross-border inbound rescue takeover (contested vs state fund)
+category_code,26,Cross-border merger / dual-parent JV restructuring (mega)
+category_code,27,Cross-border outbound
+category_code,28,Cross-border outbound (asset management)
+category_code,29,Cross-border outbound (cautionary case — writedown)
+category_code,30,Cross-border outbound (chemicals)
+category_code,31,"Cross-border outbound (consortium, aviation leasing)"
+category_code,32,Cross-border outbound (contested politically)
+category_code,33,Cross-border outbound (failed — activist/litigation collapse)
+category_code,34,Cross-border outbound (insurance)
+category_code,35,Cross-border outbound (robotics carve-out)
+category_code,36,Cross-border outbound (scheme)
+category_code,37,Cross-border outbound (tech)
+category_code,38,Cross-border outbound mega (pharma)
+category_code,39,Cross-border outbound mega (retail; antitrust-contested closing)
+category_code,40,Cross-border outbound mega (tech)
+category_code,41,Cross-border unsolicited proposal (failed) + failed MBO defense
+category_code,42,Distressed carve-out (warehousing structure — merger-control landmark)
+category_code,43,Distressed mega carve-out (PE consortium)
+category_code,44,Domestic consolidation (share-exchange merger)
+category_code,45,Failed take-private proposal + activist governance war (landmark)
+category_code,46,Group take-private (governance-driven)
+category_code,47,Hostile TOB (bank — first unsolicited bank takeover)
+category_code,48,Hostile TOB (first successful full hostile takeover)
+category_code,49,Hostile TOB (withdrawn)
+category_code,50,Hostile TOB defeated by white knight
+category_code,51,Hostile TOB for a J-REIT (failed; sponsor counter-TOB won)
+category_code,52,Hostile TOB vs emergency poison pill (defense upheld)
+category_code,53,Hostile counter-TOB (failed)
+category_code,54,Hostile cross-border TOB (won) vs white knight
+category_code,55,Hostile partial TOB (strategic — first modern success)
+category_code,56,MBO (COVID-window; fairness contested — pre-guidelines exhibit)
+category_code,57,MBO (PE-backed)
+category_code,58,MBO (failed — activist-defeated lowball; size-floor override)
+category_code,59,MBO (founder + PE)
+category_code,60,MBO (founder family + PE)
+category_code,61,MBO (founder family)
+category_code,62,MBO vs unsolicited strategic counterbid
+category_code,63,MBO/PE take-private
+category_code,64,Merger of equals attempt (failed)
+category_code,65,Minority squeeze-out (parent buy-in)
+category_code,66,PE buyout of listed co. (sponsor exit by trading house)
+category_code,67,PE carve-out TOB (Hitachi unwind)
+category_code,68,PE carve-out TOB (activist-pressured price)
+category_code,69,PE carve-out TOB (from parent auction)
+category_code,70,"PE take-private (activist-assisted, discount TOB)"
+category_code,71,PE take-private (dual-price structure controversy)
+category_code,72,PE take-private (ex-activist target)
+category_code,73,PE take-private (post-activism)
+category_code,74,PE take-private (recapitalization)
+category_code,75,PE-vs-PE hostile bidding war
+category_code,76,Parent buy-in TOB (appraisal landmark — court raised price)
+category_code,77,Parent carve-out / PE TOB
+category_code,78,Parent carve-out TOB (sponsor-backed strategic)
+category_code,79,Parent carve-out TOB (strategic auction; leveraged)
+category_code,80,Parent-subsidiary buy-in (mega TOB)
+category_code,81,Parent-subsidiary buy-in TOB (2020 wave)
+category_code,82,Parent-subsidiary buy-in TOB (activist-forced revision)
+category_code,83,Parent-subsidiary merger (contested exchange ratio — appraisal template)
+category_code,84,Parent-subsidiary minority buy-in
+category_code,85,Parent-subsidiary minority buy-in (mega)
+category_code,86,Strategic TOB (JV take-private of listed sub)
+category_code,87,Strategic TOB (affiliate consolidation) with price bump
+category_code,88,Strategic TOB (long-gestation parent exit)
+category_code,89,Strategic acquisition proposal (semis)
+category_code,90,"Subsidiary divestiture (PE, special situation)"
+category_code,91,Take-private (PE/consortium)
+category_code,92,"Take-private (state-backed consortium, carve-out of listed sub)"
+category_code,93,Take-private (state-backed fund)
+category_code,94,Take-private TOB (opposed strategic blockholder)
+category_code,95,Third-party TOB for listed subsidiary (parent sells)
+category_code,96,Unsolicited proposal + proxy fights (family office)
+category_code,97,Unsolicited/consentless TOB (domestic strategic)
+category_code,98,White-knight take-private (PE)
+category_group_code,0,(blank)
+category_group_code,1,Activist campaign
+category_group_code,2,Contested / hostile bid
+category_group_code,3,Cross-border outbound
+category_group_code,4,Other
+category_group_code,5,Parent-subsidiary / carve-out
+category_group_code,6,Strategic TOB
+category_group_code,7,Take-private / MBO
+outcome_code_num,0,(blank)
+outcome_code_num,1,Concluded
+outcome_code_num,2,Failed
+outcome_code_num,3,Other/Unclear
+target_exchange_code,0,(blank)
+target_exchange_code,1,ASX
+target_exchange_code,2,NYSE
+target_exchange_code,3,Nasdaq
+target_exchange_code,4,Other
+target_exchange_code,5,TSE (segment unspecified)
+target_exchange_code,6,TSE Prime
+target_exchange_code,7,TSE Standard
+target_exchange_code,8,Unlisted
+industry_group_code,0,(blank)
+industry_group_code,1,Automotive / mobility
+industry_group_code,2,Energy
+industry_group_code,3,Financials
+industry_group_code,4,HR / staffing / services
+industry_group_code,5,Healthcare / pharma
+industry_group_code,6,Industrials / machinery
+industry_group_code,7,Other
+industry_group_code,8,Printing / materials
+industry_group_code,9,Retail / consumer
+industry_group_code,10,Semiconductors / electronics
+industry_group_code,11,Technology / software
+board_recommendation_code_num,0,(blank)
+board_recommendation_code_num,1,Engaged
+board_recommendation_code_num,2,For
+board_recommendation_code_num,3,Mixed
+board_recommendation_code_num,4,Opposed
+board_recommendation_code_num,5,Other
+board_recommendation_code_num,6,Unclear/TBV
+squeeze_out_mechanism_code_num,0,(blank)
+squeeze_out_mechanism_code_num,1,Merger
+squeeze_out_mechanism_code_num,2,Scheme of arrangement
+squeeze_out_mechanism_code_num,3,Share consolidation
+squeeze_out_mechanism_code_num,4,Share exchange
+squeeze_out_mechanism_code_num,5,Unclear/TBV
+verification_confidence_code_num,0,(blank)
+verification_confidence_code_num,1,Verified (primary/current sources)

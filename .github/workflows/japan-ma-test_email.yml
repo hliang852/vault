@@ -1,0 +1,25 @@
+name: japan-ma-test-email   # run once after adding SMTP secrets, before relying on alerts
+on: [workflow_dispatch]
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: japan-ma-data
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: japan-ma
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Send test email with dummy attachment
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: |
+          echo "test,ok" > /tmp/test.csv
+          python pipeline/send_notification.py --attach /tmp/test.csv --subject "[Japan M&A] email test"
