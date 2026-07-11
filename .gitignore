@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 .DS_Store
 output/
+
+japan-ma/**/__pycache__/
+japan-ma/output/

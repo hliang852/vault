@@ -1,0 +1,21 @@
+name: japan-ma-test-pipeline
+on:
+  workflow_dispatch: {}
+  pull_request:
+    paths: ["japan-ma/**"]
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: japan-ma-data
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: japan-ma
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pandas
+      - name: Transform runs and integrity gates pass
+        run: python pipeline/transform.py --master data/Japan_Master.csv --outdir /tmp

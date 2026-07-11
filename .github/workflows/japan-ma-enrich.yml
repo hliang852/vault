@@ -1,0 +1,43 @@
+name: japan-ma-enrich   # Phase-1b batch enrichment: fetch cited filings -> extract fields -> PR for review
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Rows per batch"
+        default: "10"
+        type: string
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  enrich:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: japan-ma-data
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: japan-ma
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pandas
+      - name: Fetch cited filings, extract Phase-1b fields, apply patch
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python pipeline/enrich_agent.py --limit "${{ inputs.limit }}" --auto-apply
+      - name: Open pull request for human review (review-before-publish)
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: enrich/${{ github.run_id }}
+          title: "Phase-1b enrichment batch (${{ inputs.limit }} rows)"
+          commit-message: "enrich agent: Phase-1b batch"
+          body: |
+            Batch enrichment from each row's OWN cited filings (+ ≤6 web searches/row fallback).
+            Review checklist:
+            - [ ] Read `data/proposals/enrichment_*_REVIEW.txt` (per-field values + confidence notes)
+            - [ ] Only TBV / 'Seeded' cells were overwritten (verified data never clobbered — enforced in code)
+            - [ ] Every value names its source inline; spot-check 2-3 against the filing
+            - [ ] transform.py gates passed (Japan.csv regenerated in this PR)
+            Merge = publish. Checkpoint advances automatically; re-run the workflow for the next batch.
