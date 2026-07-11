@@ -2,6 +2,65 @@
 
 Dated log of changes made to this repo and why. Newest entries first.
 
+## 2026-07-09 (3) -- Part 3: design mockup v6 (Layer 1 = explorable map)
+
+Reworked the landing map from a static display into a navigable surface, per maintainer direction ("navigation across relations, not just a display").
+
+- **Fits any window.** The constellation now uses `preserveAspectRatio="xMidYMid meet"` and a JS-computed stage height (`min(width-derived height, viewport - chrome)`), so the whole map is always fully visible and correctly scaled regardless of window dimensions — nothing hides below the fold. (This also let the scroll choreography drop the scale-down beat from v5.)
+- **No on-map cluster labels.** Removed the persistent floating cluster names (naming is covered by the legend on the second scroll). Instead, **hovering a cluster** (via a transparent per-cluster hit-zone behind its nodes) reveals a floating cluster-name tag and spotlights that cluster's nodes; legend-chip hover does the same.
+- **Pan / zoom exploration.** Drag to pan, double-click / pinch / on-screen ＋−⟲ to zoom (wheel is deliberately left to the page so it still drives the scroll choreography). As you zoom past ~1.5×, every node reveals its company name, so the map becomes readable at depth. Pan is clamped to keep the map in view; on touch, one-finger drag only pans once zoomed in, so a rest-state swipe still scrolls the page.
+- **Objective 1.** Merged "Show me cases with these characteristics:" onto the end of the preceding sentence (no separate paragraph); fact buttons unchanged.
+
+This supersedes v5 as the approved design reference for the build.
+
+## 2026-07-09 (2) -- Part 3: design mockup v5 (final pre-build revision)
+
+Last mockup round before the production build. Also folds in a within-session fix: v4's floating-animation loops self-invoked with an undefined timestamp, computing `NaN` node positions so the Layer 1 and Layer 2 maps rendered blank — both loops now start via `requestAnimationFrame` so the first frame gets a real timestamp.
+
+- **Layer 1.** Reverted the monogram emblems back to plain nodes (consistent with the rest), but the ten mega-deals keep their **name labels** below the node. The landing scroll choreography's final beat now **scales the map down and settles it slightly lower** (`transform-origin` 42%) as the CTAs rise, so the lower clusters that were previously below the fold come into view; the dim overlay was softened (0.5) so the map stays legible behind the calls-to-action. Overlay stays inside the (scaling) map; the CTAs were lifted out of the map container so they don't scale or dim.
+- **Objective 1.** Moved "It looks like there is / isn't a competing bid" out of the main sentence into **Advanced options**, where it now flows together with the instigator and lock-up inputs.
+
+This mockup is the approved design reference for the full build.
+
+## 2026-07-09 -- Part 3: design mockup v4 (design-elevation pass, GSAP)
+
+Design-led polish of `viewer/design/mockup_japanese_minimal.html` per maintainer feedback, bringing in GSAP for choreography. GSAP loads from CDN with a **graceful fallback**: if it fails to load, every element stays visible/usable (only the scroll choreography and scroll-reveals are lost). Still a mockup; production site not built.
+
+- **Layer 1.** (1) The 10 mega-deal nodes now render as **circular monogram emblems** — a colored ring + the company's serif initials on a washi fill. These are an **IP-safe placeholder for licensed brand logos**, which we cannot reproduce; sourcing/licensing real logo assets is logged as a future task in `To-do.md` and `Case_Content_Spec.md`. (2) Cluster names are lighter/compact and, when one is spotlighted, the others fade rather than persist. (3/4/6) A **GSAP ScrollTrigger scene** pins the landing and choreographs three beats as the user scrolls: the corner "JAPAN SPECIAL SITUATIONS / 2023 JAN — 2026 JUN" marquee (top-right, beside the vertical kanji) hands off to the cluster legend (hover-to-spotlight) in the same corner, then the map dims and the two CTAs rise centered. (5) Display renames: "Cross-border outbound" → "Cross-border", "Parent-subsidiary / carve-out" → "Parent-subsidiary" (display only; underlying `category_group` values unchanged).
+- **Objective 1 finder.** Dropdowns turn red on *any* active engagement, including re-selecting the shown default (pointer-engage + change/blur logic, since native `change` doesn't fire on a same-value re-pick). First line of every sentence paragraph is indented (fact buttons are not). Results list tightened to `max-width:680px` to close the left/right whitespace, and the "precedent index, not a prediction" disclaimer moved **above** the list.
+- **Layer 2 & 3.** Both maps now reuse each node's **real landing-map coordinates** (via a fit-to-viewport transform) instead of a fresh layout, so they read as *zooming into* the landing constellation rather than a reconstruction; Layer 2 keeps the floating motion. On Layer 3, the 10 second-degree cases now connect to the **first-degree node they hang off** (their `via`, computed as the highest-scoring edge into the inner five) rather than all pointing at the center.
+- **Layer 3 testimonies** reveal **one at a time on scroll** (GSAP), down from two-up.
+- **User guide** is now a proper slide-over drawer (scrim + panel, Escape/scrim-to-close) with a placeholder 3-step walkthrough, replacing the forced anchor link.
+
+## 2026-07-08 (2) -- Part 3: design mockup v3 (second revision round)
+
+Second pass on `viewer/design/mockup_japanese_minimal.html` per maintainer feedback on v2:
+
+- **Layer 1.** The constellation now drifts continuously (per-node sinusoidal motion via `requestAnimationFrame`) for a living, multi-dimensional feel; a soft radial vignette adds depth. Cluster names moved from faded in-SVG text to crisp HTML pills positioned over each cluster centroid (always legible, never obstructed by nodes) that spotlight their cluster on hover and open the cluster view on click. Legend chips dropped the case counts and now spotlight their cluster on hover. The two calls-to-action are vertically stacked.
+- **Objective 1 finder.** "Show me cases with these characteristics:" is now its own indented paragraph; dropdowns render grey until chosen, then turn red (default grey selection = "activist campaign / any / isn't"). "Strategic tender offer" renamed "strategic tender offer / TOB". Removed the TOB and MBO fact pills (already covered by the deal-type dropdown); "Activist involved" renamed "Activists in the register". Advanced options' instigator input is now a dropdown (not buttons) and the section header is just "Advanced options —".
+- **Layer 2 cluster.** Relaid out as map-on-top / playbook-below (was side-by-side). Nodes use a wide, evenly-spaced horizontal arrangement with alternating above/below labels so floating never causes label overlap. The resolution table adds a Completed/Failed status tag after each ticker.
+- **Layer 3 dossier.** "Similar cases" mini-map redrawn for full label legibility: the 5 nearest precedents sit bright and labeled (name + ticker) in an inner ring around Fuji Soft, with the next 10 second-degree cases (`fuji_second`, computed as neighbours-of-neighbours by best edge score) dimmed in an outer ring — dimmed nodes brighten and reveal their detail on hover.
+
+## 2026-07-08 -- Part 3: design mockup v2 (maintainer-directed revision)
+
+Reworked `viewer/design/mockup_japanese_minimal.html` per detailed maintainer feedback on v1. The mockup is now an interactive prototype (real behaviors, not just static screens); the production site is still not built. Changes:
+
+- **Global.** Every user-facing `JP-###` id replaced by ticker in `xxxx JP Equity` format (from `target_ticker_code`; foreign/unlisted targets fall back to name). Added a persistent light/dark toggle (sun/moon, top-right, `localStorage`, applies to all screens) with a second validated categorical palette for the dark washi/sumi surface (dataviz checker: all checks pass on both surfaces). Added minimal on-screen navigation hints, especially on the landing map.
+- **Shared map behavior (all three maps).** A reusable "gravitational" hover: the hovered node (or cluster) scales up and its links stay lit while every other node dims to the background, plus a detail bubble near the cursor. Baked node positions relaxed with a collision pass (min gap ~7px) so no labels overlap. Click a node → its dossier; click a cluster label → the cluster view.
+- **Layer 1 (landing).** Dropped the working title/description (to be added later); kicker now reads "Japan Special Situations · 2023 Jan — 2026 Jun". Nodes enlarged (map was too sparse); only the ten biggest deals are labeled; cluster names float in faded serif near each cluster's centroid and sharpen on hover. Below the map: just the "describe a deal" primary action + a placeholder "user guide" link (the guide itself is a later to-do).
+- **Layer 2 (finder / objective 1).** Reworked into a fill-in-the-blank sentence with inline dropdowns ("This is a ___ deal in the ___ sector. It looks like there ___ a competing bid…"), fact pills, and a collapsible **Advanced options** panel exposing the Part 2 axis inputs (instigator identity, lock-up certainty). Submit scrolls to results (no page swap); results and the "precedent index, not a prediction" disclaimer retained.
+- **Layer 2 (cluster view).** Nodes now float gently and are spaced to avoid label collisions; hover shows a one-sentence "what this case was + who bid" line; the resolution write-ups in the playbook table were rewritten from broken fragments into concise 3-sentence summaries (faithful to the source `final_resolution_mechanism_raw`/`key_debate_points_raw` fields, no new facts) and now carry each target's ticker; recurring-debate chips are properly title-cased.
+- **Layer 3 (dossier).** Name now sits beside its ticker and announcement date, followed immediately by tags (sector, deal type, deal status, documentation status) and a one-line party blurb, then the facts table. "Nearest precedents" renamed **Similar cases** and rendered as a live mini-map (Fuji Soft at center, its 5 nearest precedents around it) — hovering a node gives a 3-sentence similarity rationale + match score, clicking jumps to that dossier. Testimonies/context moved to the very bottom as the final section (two cards at a time), added to the content plug-in spec as a new `testimonies` frontmatter type.
+- Added a note to `docs/Case_Content_Spec.md`: files are keyed by `deal_id` but the UI always displays name + ticker, never the id.
+
+## 2026-07-07 (2) -- Part 3 kickoff: design mockup + case-content plug-in spec
+
+Starts Part 3 (interactive site) with design-before-code, per maintainer direction. No production site code written yet.
+
+- **Added `viewer/design/mockup_japanese_minimal.html`** -- a static, self-contained design mockup of the chosen "Japanese minimal" direction (washi/ink/vermilion, serif headings; chosen over light-editorial and evolved-dark alternatives). Shows all four screens of the three-layer "onion": calm landing page (constellation only + one action), find-precedent form, zoomed cluster view with scenario playbook, and full case dossier. Built on **real data, not lorem ipsum**: baked spring-layout positions for all 62 nodes/182 edges, a genuinely-computed top-5 finder result under the current Part 2 weights (hostile-TOB demo query returns Fuji Soft / Benefit One / C&F / Toyo Construction / Makino), the real contested-hostile cluster (6 cases, true 4/2 outcome split, real resolution one-liners), and JP-026 Fuji Soft as the dossier example. The 6-hue categorical node palette (+ recessive gray for "Other") was validated with the dataviz palette checker against the washi surface (lightness band, chroma floor, CVD separation, contrast -- all pass).
+- **Added `docs/Case_Content_Spec.md` + `content/cases/` scaffold.** Maintainer decision: executive summaries and source links are being produced **separately** -- Part 3 writes none of either, and nothing is auto-generated. The spec defines the plug-in contract (one `content/cases/JP-XXX.md` per case, YAML frontmatter with typed/verified links + Markdown summary body, hard build-time validation, honest "pending" placeholder rendering when a file doesn't exist) so content mounts later without touching site code.
+- Dossier-page mockup surfaces existing dataset caveats in the design itself: verification-confidence badge, estimate markers, and the permanent "precedent index, not a prediction" line under finder results.
+
 ## 2026-07-07 -- Part 2 follow-up: community-detection tuning, redundancy consolidation
 
 Resolves the two open items from 2026-07-06 (5)'s to-do list; see `docs/To-do.md` 2026-07-07 for the full investigation and numbers.

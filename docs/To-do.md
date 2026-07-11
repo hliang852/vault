@@ -2,6 +2,26 @@
 
 Timestamped log of manual verification items and decisions that need the maintainer's attention. Not auto-resolved by any script.
 
+## 2026-07-09 -- Part 3 mockup v4 (design-elevation pass)
+
+- **Licensed logo assets needed for the mega-deal emblem nodes.** The mockup renders the ~10 biggest deals as monogram emblems (company initials) because actual brand logos are trademarked and can't be reproduced by us. Decide whether to (a) license/source official logo SVGs per company, (b) keep the monogram emblem style as the permanent design, or (c) some hybrid. If real logos, they become another per-case content asset — consider adding a `logo` field to `Case_Content_Spec.md`.
+- **GSAP is loaded from CDN in the mockup.** For the production build, decide whether to self-host GSAP (and confirm the ScrollTrigger pin behaves on the real multi-section site) or keep the CDN. The mockup already degrades gracefully if GSAP is absent, but the production landing choreography depends on it.
+- **The landing scroll choreography (pin + 3 beats) is the riskiest interaction to productionize** — verify it feels smooth on trackpad, wheel, and touch, and that it doesn't fight the page's normal scroll or the anchor-nav. Tune the `end:'+=1500'` scroll length and beat timings against real content.
+
+## 2026-07-08 -- Part 3 mockup v2 reviewed against feedback
+
+- **Review mockup v2** (`viewer/design/mockup_japanese_minimal.html`) -- now an interactive prototype (dark-mode toggle, gravitational hover on all maps, fill-in-the-blank finder with Advanced options, live "Similar cases" mini-map). All v1 feedback items are addressed; decision needed: approve and proceed to the production build, or another iteration.
+- **A "user guide" is promised but not built.** The landing page links to a `#guide-placeholder` anchor. The guide should be authored as a short walkthrough/checklist of how to use the site (maintainer said "code that later"). Open item.
+- **The `is / isn't competing bid` dropdown and Advanced axis inputs don't recompute live in the mockup** -- results are precomputed for the demo query. The production build must wire all finder inputs (including the Advanced axis inputs) to a live recompute against the full Part 2 feature set.
+- **"Continuous zoom" between layers is represented, not real.** The mockup uses scroll/anchor jumps between the three screens; the production build needs the actual animated zoom (map -> cluster -> node) the maintainer described.
+- **3-sentence case write-ups in the mockup were hand-authored for the ~11 featured cases only**, faithfully from existing raw fields. These are illustrative -- when real dossier content lands via `Case_Content_Spec.md`, decide whether the cluster-table resolution blurb and the similar-case rationale are drawn from that content or remain separately maintained short strings.
+
+## 2026-07-07 (2) -- Part 3 design phase (superseded by v2 above)
+
+- ~~Review the design mockup v1~~ -- **done; v1 feedback captured and applied in v2 (2026-07-08).**
+- ~~Decide the finder's final input set~~ -- **decided 2026-07-08:** keep archetype/industry/competing-bid + fact pills as the primary sentence; Part 2 axis inputs (instigator, lock-up) go behind an **Advanced options** expander, not on the main form.
+- **Case dossier content (summaries + links + testimonies) is being produced separately** -- Part 3 deliberately writes none of it. The plug-in contract is in `docs/Case_Content_Spec.md` (now includes a `testimonies` type); `content/cases/` is scaffolded empty. When content files land, wire the build-time validation/merge exactly per that spec -- do not relax the fail-loud rules.
+
 ## 2026-07-06 (6) -- Part 2 axis-tag/community-detection layer
 
 - ~~**k-clique community detection is degenerate at `k=3`, `MIN_SCORE=1.5` and needs tuning.**~~ -- **Resolved 2026-07-07.** See the 2026-07-07 entry below for the investigation and fix.

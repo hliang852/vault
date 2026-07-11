@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design mockup — Japan Special Situations · Japanese minimal</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+  :root{
+    --washi:#f7f4ee; --washi-2:#efeae0; --panel:#fbf9f5; --panel-90:rgba(251,249,245,.92);
+    --ink:#262219; --ink-2:#6b645a; --ink-3:#9a938a;
+    --hairline:#ddd5c7; --accent:#c04a2e; --accent-soft:#e9d9cf;
+    --shadow:rgba(60,50,30,.10);
+    --serif:'Hiragino Mincho ProN','Yu Mincho','Times New Roman',Georgia,serif;
+    --sans:'Hiragino Sans','Yu Gothic',-apple-system,'Segoe UI',sans-serif;
+    --mono:ui-monospace,'SF Mono',Menlo,monospace;
+  }
+  :root[data-theme="dark"]{
+    --washi:#1a1815; --washi-2:#232019; --panel:#211e18; --panel-90:rgba(33,30,24,.92);
+    --ink:#efe9dc; --ink-2:#b3ab9c; --ink-3:#7d766a;
+    --hairline:#3a352c; --accent:#e0674a; --accent-soft:#3a2a22;
+    --shadow:rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--washi); color:var(--ink); font-family:var(--sans); font-size:15px; line-height:1.7;
+    transition:background .4s ease, color .4s ease;}
+
+  .mockup-bar{position:fixed; top:0; left:0; right:0; z-index:90; background:#141210; color:#f0ece3;
+    font-size:12px; padding:7px 18px; display:flex; gap:18px; align-items:center; font-family:var(--mono);}
+  .mockup-bar b{color:#e8b04a; font-weight:600;}
+  .mockup-bar nav{margin-left:auto; display:flex; gap:14px;}
+  .mockup-bar a{color:#f0ece3; text-decoration:none; opacity:.7;}
+  .mockup-bar a:hover{opacity:1;}
+  .mock-note{max-width:1080px; margin:22px auto 0; padding:9px 15px; border:1px dashed var(--ink-3);
+    color:var(--ink-2); font-size:12px; background:var(--washi-2); border-radius:3px; position:relative; z-index:5;}
+  .mock-note b{color:var(--accent);}
+
+  .theme-toggle{position:fixed; top:44px; right:22px; z-index:70; width:40px; height:40px; border-radius:50%;
+    border:1px solid var(--hairline); background:var(--panel); color:var(--ink); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 2px 10px var(--shadow);
+    transition:transform .2s, background .4s, border-color .4s;}
+  .theme-toggle:hover{transform:scale(1.08);}
+  .theme-toggle svg{width:19px; height:19px;}
+
+  section{min-height:100vh; padding:92px 28px 80px; border-bottom:1px solid var(--hairline);}
+  .wrap{max-width:1080px; margin:0 auto;}
+
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); margin-bottom:14px;}
+  h1{font-family:var(--serif); font-weight:500; font-size:40px; line-height:1.25; letter-spacing:.01em;}
+  h2{font-family:var(--serif); font-weight:500; font-size:28px; line-height:1.3;}
+  .sub{color:var(--ink-2); font-size:15.5px; max-width:640px; margin-top:14px;}
+  .btn-primary{display:inline-flex; align-items:center; justify-content:center; gap:9px; background:var(--accent); color:#fdfaf5; padding:13px 26px;
+    font-size:14px; letter-spacing:.03em; border:none; border-radius:3px; cursor:pointer; text-decoration:none; font-family:var(--sans);}
+  .btn-primary:hover{filter:brightness(.94);}
+  .btn-ghost{display:inline-flex; align-items:center; justify-content:center; gap:8px; color:var(--ink-2); padding:12px 20px; font-size:13.5px; text-decoration:none;
+    border:1px solid var(--hairline); border-radius:3px; background:transparent; cursor:pointer; font-family:var(--sans);}
+  .btn-ghost:hover{border-color:var(--ink-3); color:var(--ink);}
+  .section-label{font-size:11px; font-family:var(--mono); letter-spacing:.2em; text-transform:uppercase;
+    color:var(--ink-3); margin:44px 0 10px; padding-bottom:8px; border-bottom:1px solid var(--hairline);}
+
+  .map-node{cursor:pointer; transition:opacity .3s ease, r .3s cubic-bezier(.34,1.4,.5,1);}
+  .map-node.dim{opacity:.1;}
+  .map-node.dim2{opacity:.30;}
+  .map-label{pointer-events:none; opacity:0; transition:opacity .25s ease;}
+  .map-label.named{opacity:1;}
+  .map-label.show{opacity:1;}
+  .map-label.zshow{opacity:1;}
+  .map-edge{transition:opacity .3s ease; pointer-events:none;}
+  .map-edge.dim{opacity:.04;}
+  .bubble{position:fixed; pointer-events:none; z-index:95; max-width:300px; background:var(--panel);
+    border:1px solid var(--hairline); border-radius:6px; box-shadow:0 8px 30px var(--shadow);
+    padding:13px 15px; opacity:0; transform:translateY(6px); transition:opacity .18s, transform .18s; font-family:var(--sans);}
+  .bubble.on{opacity:1; transform:translateY(0);}
+  .bubble .b-name{font-family:var(--serif); font-size:16px; color:var(--ink);}
+  .bubble .b-tick{font-family:var(--mono); font-size:10.5px; color:var(--ink-3); margin-top:2px; letter-spacing:.03em;}
+  .bubble .b-body{font-size:12.5px; color:var(--ink-2); margin-top:9px; line-height:1.55;}
+  .bubble .b-score{font-family:var(--mono); font-size:11px; color:var(--accent); margin-top:8px;}
+
+  /* ---- layer 1 ---- */
+  #landing{padding-top:58px;}
+  #landing .wrap{position:relative;}
+  .map-stage{position:relative; max-width:1120px; margin:6px auto 0; overflow:hidden;
+    background:radial-gradient(ellipse 68% 60% at 50% 48%, var(--washi-2) 0%, var(--washi) 82%);
+    border-radius:14px;}
+  #constellation{display:block; width:100%; height:100%; touch-action:none; cursor:grab;}
+  #constellation.grabbing{cursor:grabbing;}
+  .corner{position:absolute; top:18px; right:22px; display:flex; gap:14px; align-items:flex-start; z-index:6; pointer-events:none;}
+  .corner .kanji{writing-mode:vertical-rl; font-family:var(--serif); font-size:28px; color:var(--hairline); letter-spacing:.34em;}
+  .corner .marque{font-family:var(--mono); font-size:12px; letter-spacing:.2em; color:var(--accent); line-height:1.9; text-align:right;}
+  .corner .marque .yr{color:var(--ink-3); font-size:10.5px;}
+  .side-legend{position:absolute; top:18px; right:22px; display:flex; flex-direction:column; gap:3px; align-items:flex-end; z-index:6;}
+  .side-legend .chip{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink-2); cursor:pointer;
+    padding:3px 7px; border-radius:12px; transition:background .2s,color .2s;}
+  .side-legend .chip:hover{background:var(--panel-90); color:var(--ink);}
+  .side-legend .chip .dot{width:9px; height:9px; border-radius:50%;}
+  .cluster-tag{position:absolute; transform:translate(-50%,-100%) translateY(2px); font-family:var(--serif); font-size:16.5px;
+    color:var(--ink); padding:1px 3px 5px; white-space:nowrap; pointer-events:none; opacity:0; z-index:6; letter-spacing:.01em;
+    border-bottom:2px solid var(--accent); transition:opacity .25s, transform .25s;
+    text-shadow:0 1px 5px var(--washi), 0 -1px 5px var(--washi), 0 0 10px var(--washi);}
+  .cluster-tag.on{opacity:1; transform:translate(-50%,-100%) translateY(-2px);}
+  .dim-overlay{position:absolute; inset:0; background:var(--washi); opacity:0; pointer-events:none; z-index:7; border-radius:14px;}
+  .zoom-ctrl{position:absolute; left:16px; bottom:16px; display:flex; flex-direction:column; gap:6px; z-index:6;}
+  .zoom-ctrl button{width:32px; height:32px; border-radius:8px; border:1px solid var(--hairline); background:var(--panel-90);
+    color:var(--ink-2); font-size:16px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;}
+  .zoom-ctrl button:hover{border-color:var(--ink-3); color:var(--ink);}
+  .explore-hint{position:absolute; left:16px; top:16px; font-family:var(--mono); font-size:10.5px; letter-spacing:.05em;
+    color:var(--ink-3); z-index:6; pointer-events:none;}
+  .cta-float{position:absolute; left:50%; top:56%; transform:translate(-50%,-50%); display:flex; flex-direction:column;
+    gap:13px; align-items:center; z-index:8; pointer-events:none;}
+  .cta-float.live{pointer-events:auto;}
+  .cta-float .btn-primary,.cta-float .btn-ghost{min-width:340px; box-shadow:0 6px 24px var(--shadow);}
+  .scroll-cue{position:absolute; left:50%; bottom:18px; transform:translateX(-50%); font-family:var(--mono);
+    font-size:10.5px; letter-spacing:.2em; color:var(--ink-3); text-transform:uppercase; z-index:8; opacity:.8;}
+
+  /* ---- finder ---- */
+  .madlib{max-width:760px;}
+  .madlib p{font-family:var(--serif); font-size:22px; line-height:2.1; color:var(--ink); margin-bottom:4px; text-indent:34px;}
+  .madlib select{font-family:var(--serif); font-size:19px; color:var(--ink-3); background:var(--panel);
+    border:none; border-bottom:1.5px solid var(--ink-3); padding:2px 24px 2px 8px; cursor:pointer; border-radius:3px 3px 0 0;
+    appearance:none; text-indent:0; transition:color .2s, border-color .2s;
+    background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+    background-position:calc(100% - 13px) 13px,calc(100% - 8px) 13px; background-size:5px 5px,5px 5px; background-repeat:no-repeat;}
+  .madlib select.chosen{color:var(--accent); border-bottom-color:var(--accent);}
+  .factbtns{display:flex; flex-wrap:wrap; gap:9px; margin:8px 0 0; max-width:700px; text-indent:0;}
+  .pill{border:1px solid var(--hairline); padding:7px 14px; font-size:13px; border-radius:18px; color:var(--ink-2);
+    background:var(--panel); cursor:pointer; user-select:none; font-family:var(--sans); transition:all .15s;}
+  .pill:hover{border-color:var(--ink-3);}
+  .pill.on{background:var(--ink); color:var(--washi); border-color:var(--ink);}
+  :root[data-theme="dark"] .pill.on{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .adv-toggle{margin-top:22px; display:inline-flex; align-items:center; gap:8px; cursor:pointer; color:var(--ink-2);
+    font-size:13px; font-family:var(--mono); letter-spacing:.05em; user-select:none;}
+  .adv-toggle .chev{transition:transform .25s;}
+  .adv-toggle.open .chev{transform:rotate(180deg);}
+  .adv-panel{max-height:0; overflow:hidden; transition:max-height .35s ease;}
+  .adv-panel.open{max-height:280px;}
+  .adv-inner{padding:14px 0 4px;}
+  .adv-inner p{font-family:var(--serif); font-size:20px; line-height:2; color:var(--ink); max-width:720px; text-indent:34px;}
+  .find-btn-row{margin-top:28px;}
+  .results{max-width:680px;}
+  .disclaimer{font-size:12px; color:var(--ink-2); max-width:680px; line-height:1.6; margin:14px 0 4px;
+    padding:12px 15px; background:var(--washi-2); border-left:3px solid var(--accent); border-radius:0 4px 4px 0;}
+  .result{display:grid; grid-template-columns:34px 1fr auto; gap:14px; align-items:baseline;
+    padding:14px 2px; border-bottom:1px solid var(--hairline);}
+  .result .rank{font-family:var(--serif); font-size:22px; color:var(--ink-3);}
+  .result .name{font-family:var(--serif); font-size:17px;}
+  .result .name a{color:var(--ink); text-decoration:none; border-bottom:1px solid var(--hairline);}
+  .result .name a:hover{border-color:var(--accent); color:var(--accent);}
+  .result .tick{font-family:var(--mono); font-size:11px; color:var(--ink-3); margin-left:8px;}
+  .result .meta{font-size:12px; color:var(--ink-2); margin-top:3px;}
+  .result .why{font-size:11.5px; color:var(--ink-3); margin-top:5px;}
+  .result .why em{font-style:normal; background:var(--washi-2); padding:2px 8px; border-radius:3px; margin-right:6px;}
+  .scorebar{width:96px; height:3px; background:var(--washi-2); border-radius:2px; margin-top:6px;}
+  .scorebar i{display:block; height:3px; background:var(--accent); border-radius:2px;}
+  .score-num{font-family:var(--mono); font-size:11px; color:var(--ink-3); text-align:right;}
+
+  /* ---- layer 2 ---- */
+  #clusterview{width:100%; height:auto; display:block; max-width:820px; margin:10px auto 0;}
+  .playbook{margin-top:22px;}
+  .pb-grid{display:grid; grid-template-columns:290px 1fr; gap:40px; align-items:start;}
+  .bar-labels{display:flex; gap:16px; font-size:12px; color:var(--ink-2); margin:8px 0 5px;}
+  .bar-labels .dot{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px;}
+  .outcome-bar{display:flex; height:15px; border-radius:3px; overflow:hidden; gap:2px;}
+  .outcome-bar i{display:block; height:100%;}
+  .themes{display:flex; flex-wrap:wrap; gap:7px; margin-top:12px;}
+  .theme{font-size:12px; background:var(--washi-2); color:var(--ink-2); padding:5px 12px; border-radius:3px;}
+  .mech-list{list-style:none;}
+  .mech-list li{font-size:12.5px; color:var(--ink-2); padding:12px 0; border-top:1px solid var(--hairline); line-height:1.6;}
+  .mech-list li .m-head{display:flex; align-items:center; gap:9px; margin-bottom:4px; flex-wrap:wrap;}
+  .mech-list li b{color:var(--ink); font-weight:600; font-family:var(--serif); font-size:15px;}
+  .mech-list li .m-tick{font-family:var(--mono); font-size:10px; color:var(--ink-3);}
+  .status-tag{font-family:var(--mono); font-size:9px; letter-spacing:.06em; text-transform:uppercase; padding:2px 7px; border-radius:3px;}
+  .status-tag.ok{background:rgba(85,130,61,.14); color:#4e7a37;}
+  .status-tag.fail{background:rgba(192,74,46,.14); color:var(--accent);}
+  :root[data-theme="dark"] .status-tag.ok{background:rgba(106,154,80,.2); color:#8fbf72;}
+
+  /* ---- layer 3 ---- */
+  .crumbs{font-size:12.5px; color:var(--ink-3); font-family:var(--mono); letter-spacing:.03em;}
+  .crumbs a{color:var(--ink-3); text-decoration:none;} .crumbs a:hover{color:var(--accent);}
+  .case-head{margin-top:26px; display:flex; align-items:baseline; gap:16px; flex-wrap:wrap;}
+  .case-head h1{font-size:40px;}
+  .case-head .tick{font-family:var(--mono); font-size:14px; color:var(--ink-2); letter-spacing:.02em;}
+  .case-head .anndate{font-family:var(--mono); font-size:12px; color:var(--ink-3);}
+  .tags{display:flex; gap:8px; margin-top:15px; flex-wrap:wrap;}
+  .tag{font-size:11.5px; font-family:var(--mono); letter-spacing:.04em; padding:5px 12px; border-radius:3px;
+    border:1px solid var(--hairline); color:var(--ink-2); display:inline-flex; gap:7px; align-items:center;}
+  .tag .tl{font-size:9px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.1em;}
+  .tag.archetype{border-color:var(--accent); color:var(--accent);}
+  .tag.status-ok{border-color:#55823d; color:#55823d;}
+  :root[data-theme="dark"] .tag.status-ok{border-color:#6a9a50; color:#8fbf72;}
+  .blurb{font-family:var(--serif); font-size:18px; line-height:1.6; color:var(--ink-2); max-width:660px; margin-top:20px;}
+  .facts{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--hairline); border:1px solid var(--hairline); margin-top:10px; border-radius:4px; overflow:hidden;}
+  .fact{background:var(--panel); padding:16px 16px 13px;}
+  .fact .k{font-size:10.5px; font-family:var(--mono); letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3);}
+  .fact .v{font-family:var(--serif); font-size:17px; margin-top:6px; line-height:1.4;}
+  .fact .v small{font-size:12px; color:var(--ink-2); font-family:var(--sans); display:block; margin-top:2px;}
+  .fact.wide{grid-column:span 2;} .fact.wide .v{font-size:14.5px;}
+  #similarview{width:100%; height:auto; display:block; max-width:740px; margin:4px auto 0;}
+  .sim-hint{text-align:center; font-size:12px; color:var(--ink-3); font-family:var(--mono); margin-top:6px;}
+  .plugin-slot{border:1.5px dashed var(--ink-3); background:transparent; padding:28px; margin-top:16px; border-radius:4px; color:var(--ink-2);}
+  .plugin-slot .slot-tag{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:9px;}
+  .plugin-slot p{font-size:13.5px; max-width:580px;}
+  .plugin-slot code{font-family:var(--mono); font-size:12px; background:var(--washi-2); padding:2px 6px; border-radius:3px;}
+  .quote{border-left:3px solid var(--accent-soft); padding:16px 20px; background:var(--panel); border-radius:0 4px 4px 0; max-width:640px; margin-top:14px;}
+  .quote .q-txt{font-family:var(--serif); font-size:16px; color:var(--ink-3); font-style:italic;}
+  .quote .q-src{font-family:var(--mono); font-size:10.5px; color:var(--ink-3); margin-top:10px; letter-spacing:.05em;}
+  footer{padding:32px; text-align:center; color:var(--ink-3); font-size:12px;}
+
+  .guide-scrim{position:fixed; inset:0; background:rgba(20,15,10,.36); opacity:0; pointer-events:none; z-index:96; transition:opacity .4s;}
+  .guide-scrim.open{opacity:1; pointer-events:auto;}
+  .guide-panel{position:fixed; top:0; right:0; height:100%; width:min(460px,92vw); background:var(--panel);
+    border-left:1px solid var(--hairline); box-shadow:-10px 0 40px var(--shadow); z-index:97;
+    transform:translateX(100%); transition:transform .45s cubic-bezier(.4,0,.2,1); padding:40px 36px; overflow-y:auto;}
+  .guide-panel.open{transform:translateX(0);}
+  .guide-panel h2{margin-bottom:6px;}
+  .guide-close{position:absolute; top:20px; right:22px; background:none; border:none; color:var(--ink-3); font-size:22px; cursor:pointer;}
+  .guide-step{display:flex; gap:14px; padding:16px 0; border-top:1px solid var(--hairline);}
+  .guide-step .n{font-family:var(--serif); font-size:22px; color:var(--accent); flex-shrink:0;}
+  .guide-step .t{font-size:13.5px; color:var(--ink-2); line-height:1.6;}
+  .guide-step .t b{color:var(--ink); font-family:var(--serif); font-weight:600; font-size:15px;}
+  @media (max-width:900px){ .pb-grid,.facts{grid-template-columns:1fr 1fr;} .pb-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<div class="mockup-bar">
+  <span><b>DESIGN MOCKUP v6</b> · Japanese minimal · explorable map · GSAP-choreographed · real data</span>
+  <nav><a href="#landing">1 · Map</a><a href="#finder">2 · Finder</a><a href="#cluster">2 · Cluster</a><a href="#case">3 · Dossier</a></nav>
+</div>
+
+<button class="theme-toggle" id="themeToggle" title="Toggle light / dark" aria-label="Toggle light or dark"></button>
+
+<!-- ============ LAYER 1 ============ -->
+<section id="landing">
+  <div class="wrap">
+    <div class="mock-note"><b>Mockup note — layer 1.</b> The map fits the window fully. It's a navigable surface: <b>drag</b> to pan,
+      <b>double-click / pinch / ＋−</b> to zoom (more company names appear as you zoom in), <b>hover a cluster</b> to name &amp; spotlight it.
+      Scroll to hand the marquee off to the legend and raise the calls-to-action.</div>
+    <div class="map-stage" id="stage">
+      <svg id="constellation" viewBox="0 0 1000 640" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Explorable map of 62 Japanese special-situation cases"></svg>
+      <div class="explore-hint" id="exploreHint">drag · pinch · double-click to explore</div>
+      <div class="corner" id="cornerMarquee">
+        <div class="marque">JAPAN SPECIAL SITUATIONS<br><span class="yr">2023 JAN — 2026 JUN</span></div>
+        <div class="kanji">先例</div>
+      </div>
+      <div class="side-legend" id="sideLegend"></div>
+      <div class="cluster-tag" id="clusterTag"></div>
+      <div class="zoom-ctrl"><button id="zIn" aria-label="Zoom in">+</button><button id="zOut" aria-label="Zoom out">−</button><button id="zReset" aria-label="Reset" style="font-size:13px;">⟲</button></div>
+      <div class="dim-overlay" id="dimOverlay"></div>
+    </div>
+    <div class="cta-float" id="ctaFloat">
+      <a class="btn-primary" href="#finder">Describe a deal &amp; find its precedents →</a>
+      <button class="btn-ghost" id="guideBtn">Read the user guide</button>
+    </div>
+    <div class="scroll-cue" id="scrollCue">scroll to begin ↓</div>
+  </div>
+</section>
+
+<!-- ============ FINDER ============ -->
+<section id="finder">
+  <div class="wrap">
+    <div class="mock-note"><b>Mockup note — objective 1.</b> Dropdowns turn red the moment you engage them (even re-choosing the default).
+      Results are really computed under the Part 2 weights for the shown selection.</div>
+    <div class="eyebrow">Find precedents</div>
+    <div class="madlib">
+      <p>This is a
+        <select id="q-arch" data-def="0"><option>activist campaign</option><option>hostile / contested</option><option>take-private / MBO</option><option>cross-border</option><option>parent-subsidiary</option><option>strategic tender offer / TOB</option></select>
+        deal in the
+        <select id="q-ind" data-def="0"><option>any</option><option>IT / software</option><option>machinery</option><option>financials</option><option>retail / consumer</option><option>semiconductors</option></select>
+        sector. Show me cases with these characteristics:</p>
+      <div class="factbtns" id="factbtns"></div>
+      <div class="adv-toggle" id="advToggle"><span class="chev">▾</span> Advanced options —</div>
+      <div class="adv-panel" id="advPanel"><div class="adv-inner">
+        <p>It looks like there
+          <select id="q-comp" data-def="0"><option>isn't</option><option>is</option></select>
+          a competing bid, instigated by
+          <select id="q-instig" data-def="0"><option>anyone</option><option>activists</option><option>a PE sponsor</option><option>a strategic buyer</option></select>,
+          with lock-up certainty of
+          <select id="q-lock" data-def="0"><option>any</option><option>none</option><option>partial</option><option>decisive (irrevocables)</option></select>.</p>
+      </div></div>
+    </div>
+    <div class="find-btn-row"><a class="btn-primary" href="#results-anchor" id="findBtn">Find comparable precedents ↓</a></div>
+    <div id="results-anchor"></div>
+    <div class="section-label">Five closest precedents · ranked by shared facts</div>
+    <p class="disclaimer">This ranks the 62 cases by shared, nameable facts under the Part 2 weights — a
+      <b>precedent index, not a prediction</b>. Every match reason is shown; verify specifics against primary filings (EDINET / TDnet) before relying on any detail.</p>
+    <div class="results" id="results"></div>
+  </div>
+</section>
+
+<!-- ============ LAYER 2 CLUSTER ============ -->
+<section id="cluster">
+  <div class="wrap">
+    <div class="mock-note"><b>Mockup note — layer 2.</b> Nodes keep their real positions from the landing map (as if zoomed in), still floating.
+      Hover a node for a one-line description; click → its dossier.</div>
+    <div class="eyebrow">Cluster · deal archetype</div>
+    <h2>Contested &amp; hostile bids <span style="color:var(--ink-3); font-size:20px;">· 6 cases</span></h2>
+    <p class="sub">Unsolicited approaches, interloper contests and bids launched without board consent — the archetype reshaped by METI's 2023 takeover guidelines.</p>
+    <svg id="clusterview" viewBox="0 0 820 360" role="img" aria-label="The six contested and hostile bid cases"></svg>
+    <div class="playbook">
+      <div class="section-label">Scenario playbook · across these 6 precedents</div>
+      <div class="pb-grid">
+        <div>
+          <div class="bar-labels"><span><i class="dot" style="background:#55823d;"></i>Concluded · 4</span><span><i class="dot" style="background:var(--accent);"></i>Failed · 2</span></div>
+          <div class="outcome-bar"><i style="width:66.6%; background:#55823d; border-radius:3px 0 0 3px;"></i><i style="width:33.3%; background:var(--accent); border-radius:0 3px 3px 0;"></i></div>
+          <div class="section-label" style="margin-top:24px;">Recurring Debate Points</div>
+          <div class="themes"><span class="theme">Board Consent &amp; "Bona Fide Offer"</span><span class="theme">Interloper Risk</span><span class="theme">Lock-Ups &amp; Irrevocables</span><span class="theme">METI 2023 Guidelines</span></div>
+        </div>
+        <div><div class="section-label" style="margin-top:0;">How each resolved</div><ul class="mech-list" id="mechlist"></ul></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LAYER 3 DOSSIER ============ -->
+<section id="case">
+  <div class="wrap">
+    <div class="mock-note"><b>Mockup note — layer 3.</b> "Similar cases" keeps the landing map's real geometry: Fuji Soft and its 5 nearest
+      precedents (bright, labeled), with 10 second-degree cases dimmed and linked to the first-degree node they hang off.</div>
+    <div class="crumbs"><a href="#landing">Map</a> · <a href="#cluster">Contested &amp; hostile bids</a> · <span style="color:var(--ink);">Fuji Soft</span></div>
+    <div class="case-head"><h1>Fuji Soft</h1><span class="tick">9749 JP Equity</span><span class="anndate">announced 2024-08-08</span></div>
+    <div class="tags">
+      <span class="tag"><span class="tl">Sector</span> IT / software</span>
+      <span class="tag archetype"><span class="tl">Type</span> Contested / hostile bid</span>
+      <span class="tag status-ok"><span class="tl">Status</span> Concluded</span>
+      <span class="tag status-ok"><span class="tl">Docs</span> Completed</span>
+    </div>
+    <p class="blurb">KKR (winner); Bain Capital (counterbidder, went hostile before ultimately withdrawing) — a sponsor-versus-sponsor contest for a founder-influenced IT-services company.</p>
+    <div class="section-label">Key facts</div>
+    <div class="facts">
+      <div class="fact"><div class="k">Deal size</div><div class="v">US$4.0bn</div></div>
+      <div class="fact"><div class="k">Final offer</div><div class="v">¥9,451 <small>KKR, per share</small></div></div>
+      <div class="fact"><div class="k">Time to close</div><div class="v">7.7 months</div></div>
+      <div class="fact"><div class="k">Completed</div><div class="v">2025-03-31</div></div>
+      <div class="fact wide"><div class="k">Price path</div><div class="v">KKR ¥8,800 → ¥9,451 · Bain ¥9,300 → ¥9,450 (hostile, withdrew Feb 2025)</div></div>
+      <div class="fact wide"><div class="k">Board posture</div><div class="v">For KKR throughout; declined to support Bain despite a higher interim price</div></div>
+      <div class="fact wide"><div class="k">Lock-ups</div><div class="v">3D Investment (~21%) + Farallon (~9%) irrevocables to KKR — decisive</div></div>
+      <div class="fact wide"><div class="k">Key debate</div><div class="v">Could the board favor the lower-headline bid? Activists selling control via irrevocables; founder family split</div></div>
+    </div>
+    <div class="section-label">Similar cases · by shared facts</div>
+    <svg id="similarview" viewBox="0 0 740 440" role="img" aria-label="Fuji Soft's nearest precedents in their map positions"></svg>
+    <div class="sim-hint">5 nearest precedents labeled · 10 second-degree cases dimmed, linked to their first-degree node · hover for why &amp; match score</div>
+    <div class="section-label">Dossier</div>
+    <div class="plugin-slot"><div class="slot-tag">Executive summary · pending</div>
+      <p>Written narrative mounts here from <code>content/cases/JP-026.md</code> once produced. No summary is auto-generated in the meantime.</p></div>
+    <div class="plugin-slot"><div class="slot-tag">Primary sources &amp; citations · pending</div>
+      <p>Verified links (EDINET filings, TDnet disclosures, press coverage, company IR) mount here, each labeled by source type and verification date.</p></div>
+    <div class="section-label">Context &amp; commentary</div>
+    <div class="plugin-slot"><div class="slot-tag">Testimonies &amp; press context · pending — one at a time on scroll</div>
+      <div id="testimonies">
+        <div class="quote"><div class="q-txt">"Placeholder — a scraped quote or press excerpt providing context mounts here, revealed one at a time as the reader scrolls the foot of the dossier."</div><div class="q-src">SOURCE · DATE — pending</div></div>
+      </div></div>
+  </div>
+</section>
+
+<footer>Sixty-two hand-curated landmark situations, 2023–2026H1 · a qualitative precedent library, not a predictive model · many prices and dates are estimates pending primary-source verification</footer>
+
+<div class="bubble" id="bubble"></div>
+
+<div class="guide-scrim" id="guideScrim"></div>
+<aside class="guide-panel" id="guidePanel" aria-label="User guide">
+  <button class="guide-close" id="guideClose" aria-label="Close">×</button>
+  <div class="eyebrow">How to read this atlas</div>
+  <h2>A three-step guide</h2>
+  <p style="color:var(--ink-2); font-size:13.5px; margin-top:8px;">Placeholder walkthrough — final copy to be written.</p>
+  <div class="guide-step"><div class="n">1</div><div class="t"><b>Explore the map.</b> Drag, zoom and hover to navigate the relations. Each dot is a landmark deal; colour is its archetype, size is deal value.</div></div>
+  <div class="guide-step"><div class="n">2</div><div class="t"><b>Describe your deal.</b> Fill in the sentence to surface the five closest historical precedents by shared facts — an index, never a prediction.</div></div>
+  <div class="guide-step"><div class="n">3</div><div class="t"><b>Open a case.</b> Zoom into any node for its dossier: key facts, similar cases in context, and (soon) executive summaries and primary sources.</div></div>
+</aside>
+
+<script>
+const DATA = {"nodes": [{"id": "JP-001", "sn": "Toshiba", "cg": "Take-private / MBO", "x": 342.9, "y": 266.2, "r": 15.6, "outcome": "Concluded", "year": "2023", "ticker": "6502 JP Equity", "size": 13500.0}, {"id": "JP-002", "sn": "JSR", "cg": "Take-private / MBO", "x": 307.3, "y": 213.3, "r": 12.6, "outcome": "Concluded", "year": "2023", "ticker": "4185 JP Equity", "size": 6300.0}, {"id": "JP-003", "sn": "Shinsei Bank", "cg": "Parent-subsidiary / carve-out", "x": 283.5, "y": 84.7, "r": 8.8, "outcome": "Concluded", "year": "2023", "ticker": "8303 JP Equity", "size": 1100.0}, {"id": "JP-004", "sn": "Takisawa Machine Tool", "cg": "Contested / hostile bid", "x": 197.3, "y": 167.8, "r": 7.1, "outcome": "Concluded", "year": "2023", "ticker": "6121 JP Equity", "size": 180.0, "hover1": "A domestic consentless tender offer — Nidec's watershed unsolicited bid for Takisawa.", "resolve3": "Nidec launched Japan's watershed consentless tender offer, and a roughly 2x premium made board rejection untenable. The board ultimately recommended the bid, which succeeded in November 2023. A squeeze-out followed, normalizing unsolicited offers across the market."}, {"id": "JP-005", "sn": "Sogo & Seibu", "cg": "Other", "x": 529.8, "y": 328.9, "r": 9.3, "outcome": "Concluded", "year": "2022", "ticker": null, "size": 1600.0}, {"id": "JP-006", "sn": "Benefit One", "cg": "Contested / hostile bid", "x": 243.7, "y": 213.6, "r": 9.6, "outcome": "Concluded", "year": "2023", "ticker": "2412 JP Equity", "size": 1900.0, "hover1": "The reform era's first public bidding war — M3 versus Dai-ichi Life for Benefit One.", "resolve3": "The reform era's first true public bidding war pitted M3 against Dai-ichi Life. M3 withdrew in February 2024 and Dai-ichi's tender offer completed. A squeeze-out followed in May 2024."}, {"id": "JP-007", "sn": "Taisho Pharmaceutical", "cg": "Take-private / MBO", "x": 269.9, "y": 226.3, "r": 11.8, "outcome": "Concluded", "year": "2023", "ticker": "4581 JP Equity", "size": 4800.0}, {"id": "JP-008", "sn": "Benesse", "cg": "Take-private / MBO", "x": 252.2, "y": 189.3, "r": 9.1, "outcome": "Concluded", "year": "2023", "ticker": "9783 JP Equity", "size": 1400.0}, {"id": "JP-009", "sn": "Outsourcing", "cg": "Take-private / MBO", "x": 181.8, "y": 199.6, "r": 9.2, "outcome": "Concluded", "year": "2023", "ticker": "2427 JP Equity", "size": 1500.0}, {"id": "JP-010", "sn": "Shinko Electric Industries", "cg": "Take-private / MBO", "x": 280.0, "y": 197.5, "r": 11.7, "outcome": "Concluded", "year": "2023", "ticker": "6967 JP Equity", "size": 4700.0}, {"id": "JP-011", "sn": "United States Steel", "cg": "Cross-border outbound", "x": 355.7, "y": 520.8, "r": 16.1, "outcome": "Concluded", "year": "2023", "ticker": null, "size": 14900.0}, {"id": "JP-012", "sn": "Dai Nippon Printing", "cg": "Activist campaign", "x": 704.2, "y": 497.0, "r": 7.4, "outcome": "Concluded", "year": "2023", "ticker": "7912 JP Equity", "size": 300.0}, {"id": "JP-013", "sn": "Seven & i", "cg": "Activist campaign", "x": 690.4, "y": 348.7, "r": 6.2, "outcome": "Concluded", "year": "2023", "ticker": "3382 JP Equity", "size": 4.4}, {"id": "JP-014", "sn": "Cosmo Energy", "cg": "Activist campaign", "x": 875.6, "y": 383.8, "r": 8.0, "outcome": "Concluded", "year": "2023", "ticker": "5021 JP Equity", "size": 600.0}, {"id": "JP-015", "sn": "Toyo Construction", "cg": "Contested / hostile bid", "x": 69.7, "y": 198.4, "r": 8.3, "outcome": "Failed", "year": "2022", "ticker": "1890 JP Equity", "size": 800.0, "hover1": "A family office's unsolicited campaign — Nintendo's Yamauchi office pressing Toyo Construction.", "resolve3": "The Yamauchi family office pressed an unsolicited proposal amid proxy fights, but questions dogged whether it was fully financed. YFO never launched a formal tender offer and the campaign wound down in 2024. It remains a large holder rather than an acquirer — the cluster's clearest failure."}, {"id": "JP-016", "sn": "MDC", "cg": "Cross-border outbound", "x": 356.3, "y": 592.5, "r": 11.8, "outcome": "Concluded", "year": "2024", "ticker": null, "size": 4950.0}, {"id": "JP-017", "sn": "Lawson", "cg": "Take-private / MBO", "x": 221.8, "y": 268.0, "r": 10.8, "outcome": "Concluded", "year": "2024", "ticker": "2651 JP Equity", "size": 3300.0}, {"id": "JP-018", "sn": "Altium", "cg": "Cross-border outbound", "x": 327.0, "y": 541.5, "r": 12.4, "outcome": "Concluded", "year": "2024", "ticker": null, "size": 5900.0}, {"id": "JP-019", "sn": "Snow Peak", "cg": "Take-private / MBO", "x": 175.0, "y": 222.4, "r": 7.5, "outcome": "Concluded", "year": "2024", "ticker": "7816 JP Equity", "size": 320.0}, {"id": "JP-020", "sn": "Roland DG", "cg": "Take-private / MBO", "x": 269.4, "y": 262.1, "r": 7.8, "outcome": "Concluded", "year": "2024", "ticker": "6789 JP Equity", "size": 450.0}, {"id": "JP-021", "sn": "C&F Logistics", "cg": "Contested / hostile bid", "x": 153.6, "y": 243.0, "r": 8.3, "outcome": "Concluded", "year": "2024", "ticker": "9099 JP Equity", "size": 800.0, "hover1": "A hostile bid defeated by a white knight — AZ-COM versus SG Holdings for C&F Logistics.", "resolve3": "AZ-COM Maruwa's unsolicited bid drew SG Holdings in as a white knight. AZ-COM withdrew and SG's tender offer completed in August 2024. The contest roughly doubled the price — exhibit A that hostile pressure can surface value."}, {"id": "JP-022", "sn": "KFC Holdings Japan", "cg": "Other", "x": 222.6, "y": 130.2, "r": 8.4, "outcome": "Concluded", "year": "2024", "ticker": "9873 JP Equity", "size": 870.0}, {"id": "JP-023", "sn": "FANCL", "cg": "Strategic TOB", "x": 216.0, "y": 153.9, "r": 9.2, "outcome": "Concluded", "year": "2024", "ticker": "4921 JP Equity", "size": 1500.0}, {"id": "JP-024", "sn": "Alps Logistics", "cg": "Parent-subsidiary / carve-out", "x": 354.6, "y": 152.4, "r": 8.6, "outcome": "Concluded", "year": "2024", "ticker": "9055 JP Equity", "size": 1000.0}, {"id": "JP-025", "sn": "Infocom", "cg": "Parent-subsidiary / carve-out", "x": 293.7, "y": 112.8, "r": 9.5, "outcome": "Concluded", "year": "2024", "ticker": "4348 JP Equity", "size": 1800.0}, {"id": "JP-026", "sn": "Fuji Soft", "cg": "Contested / hostile bid", "x": 216.9, "y": 192.6, "r": 11.3, "outcome": "Concluded", "year": "2024", "ticker": "9749 JP Equity", "size": 4000.0, "hover1": "A private-equity-versus-private-equity hostile war — KKR versus Bain for Fuji Soft.", "resolve3": "KKR and Bain waged the market's landmark sponsor-versus-sponsor contest, with Bain going hostile. Activist irrevocables of roughly 30% locked to KKR proved decisive, and Bain withdrew in early 2025. KKR completed the squeeze-out and delisted the company."}, {"id": "JP-027", "sn": "Seven & i", "cg": "Take-private / MBO", "x": 406.8, "y": 298.3, "r": 24.0, "outcome": "Failed", "year": "2024", "ticker": "3382 JP Equity", "size": 47000.0}, {"id": "JP-028", "sn": "NEC Networks & System Integration", "cg": "Parent-subsidiary / carve-out", "x": 339.7, "y": 94.1, "r": 9.1, "outcome": "Concluded", "year": "2024", "ticker": "1973 JP Equity", "size": 1400.0}, {"id": "JP-029", "sn": "T-Gaia", "cg": "Take-private / MBO", "x": 157.2, "y": 181.7, "r": 8.5, "outcome": "Concluded", "year": "2024", "ticker": "3738 JP Equity", "size": 930.0}, {"id": "JP-030", "sn": "Makino Milling Machine", "cg": "Contested / hostile bid", "x": 72.5, "y": 222.9, "r": 9.4, "outcome": "Failed", "year": "2024", "ticker": "6135 JP Equity", "size": 1700.0, "hover1": "A hostile bid that backfired — Nidec's withdrawn approach for Makino.", "resolve3": "Nidec's hostile approach met board countermeasures and reputational blowback. Nidec withdrew in May 2025 and the target went to MBK at a higher price. The board's right to seek alternatives was affirmed — the cluster's second bidder failure."}, {"id": "JP-031", "sn": "Makino Milling Machine", "cg": "Take-private / MBO", "x": 394.3, "y": 219.1, "r": 9.5, "outcome": "Concluded", "year": "2025", "ticker": "6135 JP Equity", "size": 1800.0}, {"id": "JP-032", "sn": "Nissan Motor", "cg": "Other", "x": 381.5, "y": 374.6, "r": 6.6, "outcome": "Failed", "year": "2024", "ticker": "7201 JP Equity", "size": 58.0}, {"id": "JP-033", "sn": "Resolution Life", "cg": "Cross-border outbound", "x": 430.1, "y": 529.1, "r": 13.5, "outcome": "Concluded", "year": "2024", "ticker": null, "size": 8200.0}, {"id": "JP-034", "sn": "AOC", "cg": "Cross-border outbound", "x": 278.9, "y": 585.6, "r": 11.5, "outcome": "Concluded", "year": "2024", "ticker": null, "size": 4350.0}, {"id": "JP-035", "sn": "Mitsui Fudosan", "cg": "Activist campaign", "x": 800.9, "y": 523.3, "r": 6.1, "outcome": "Concluded", "year": "2024", "ticker": "8801 JP Equity", "size": 2.5}, {"id": "JP-036", "sn": "Sumitomo", "cg": "Activist campaign", "x": 842.1, "y": 512.4, "r": 7.9, "outcome": "Concluded", "year": "2024", "ticker": "8053 JP Equity", "size": 500.0}, {"id": "JP-037", "sn": "SoftBank", "cg": "Activist campaign", "x": 844.3, "y": 478.5, "r": 9.7, "outcome": "Concluded", "year": "2024", "ticker": "9984 JP Equity", "size": 2000.0}, {"id": "JP-038", "sn": "Keisei Electric Railway", "cg": "Activist campaign", "x": 824.4, "y": 412.8, "r": 6.1, "outcome": "Concluded", "year": "2023", "ticker": "9009 JP Equity", "size": 1.6}, {"id": "JP-039", "sn": "Exedy", "cg": "Activist campaign", "x": 930.0, "y": 429.5, "r": 6.5, "outcome": "Concluded", "year": "2024", "ticker": "7278 JP Equity", "size": 30.0}, {"id": "JP-040", "sn": "Mitsubishi Tanabe Pharma", "cg": "Parent-subsidiary / carve-out", "x": 362.0, "y": 115.2, "r": 10.8, "outcome": "Concluded", "year": "2025", "ticker": null, "size": 3300.0}, {"id": "JP-041", "sn": "Topcon", "cg": "Activist campaign", "x": 466.3, "y": 276.5, "r": 10.0, "outcome": "Concluded", "year": "2025", "ticker": "7732 JP Equity", "size": 2300.0}, {"id": "JP-042", "sn": "NTT Data", "cg": "Parent-subsidiary / carve-out", "x": 374.1, "y": 81.9, "r": 16.6, "outcome": "Concluded", "year": "2025", "ticker": "9613 JP Equity", "size": 16300.0}, {"id": "JP-043", "sn": "Toyota Industries", "cg": "Take-private / MBO", "x": 210.7, "y": 231.1, "r": 20.7, "outcome": "Concluded", "year": "2025", "ticker": "6201 JP Equity", "size": 31200.0}, {"id": "JP-044", "sn": "Shibaura Electronics", "cg": "Cross-border outbound", "x": 312.6, "y": 274.8, "r": 8.3, "outcome": "Concluded", "year": "2025", "ticker": "6957 JP Equity", "size": 740.0}, {"id": "JP-045", "sn": "York", "cg": "Activist campaign", "x": 563.8, "y": 310.3, "r": 12.1, "outcome": "Concluded", "year": "2025", "ticker": null, "size": 5400.0}, {"id": "JP-046", "sn": "Aspen Insurance", "cg": "Cross-border outbound", "x": 407.0, "y": 573.1, "r": 10.9, "outcome": "Concluded", "year": "2025", "ticker": null, "size": 3500.0}, {"id": "JP-047", "sn": "Macquarie's US & European public asset management business", "cg": "Cross-border outbound", "x": 237.5, "y": 571.2, "r": 9.5, "outcome": "Concluded", "year": "2025", "ticker": null, "size": 1800.0}, {"id": "JP-048", "sn": "Ampere Computing", "cg": "Cross-border outbound", "x": 421.0, "y": 445.9, "r": 12.7, "outcome": "Concluded", "year": "2025", "ticker": null, "size": 6500.0}, {"id": "JP-049", "sn": "ABB Robotics division", "cg": "Cross-border outbound", "x": 277.4, "y": 555.0, "r": 12.1, "outcome": "Other/Unclear", "year": "2025", "ticker": null, "size": 5375.0}, {"id": "JP-050", "sn": "Air Lease", "cg": "Cross-border outbound", "x": 356.4, "y": 560.7, "r": 13.1, "outcome": "Other/Unclear", "year": "2025", "ticker": null, "size": 7400.0}, {"id": "JP-051", "sn": "SCSK", "cg": "Parent-subsidiary / carve-out", "x": 334.1, "y": 66.2, "r": 12.4, "outcome": "Concluded", "year": "2025", "ticker": "9719 JP Equity", "size": 5880.0}, {"id": "JP-052", "sn": "Sumitomo Densetsu", "cg": "Other", "x": 311.4, "y": 148.1, "r": 8.8, "outcome": "Concluded", "year": "2025", "ticker": "1949 JP Equity", "size": 1130.0}, {"id": "JP-053", "sn": "Fujitec", "cg": "Take-private / MBO", "x": 372.5, "y": 251.7, "r": 10.4, "outcome": "Concluded", "year": "2025", "ticker": "6406 JP Equity", "size": 2800.0}, {"id": "JP-054", "sn": "Tokyo Gas", "cg": "Activist campaign", "x": 838.1, "y": 533.1, "r": 6.2, "outcome": "Other/Unclear", "year": "2025", "ticker": "9531 JP Equity", "size": 5.0}, {"id": "JP-055", "sn": "Fuji Media", "cg": "Activist campaign", "x": 855.2, "y": 407.0, "r": 6.2, "outcome": "Concluded", "year": "2025", "ticker": "4676 JP Equity", "size": 7.0}, {"id": "JP-056", "sn": "Fujitsu General", "cg": "Strategic TOB", "x": 508.1, "y": 194.1, "r": 9.4, "outcome": "Other/Unclear", "year": "2025", "ticker": "6755 JP Equity", "size": 1700.0}, {"id": "JP-057", "sn": "Tsuruha Holdings / Welcia", "cg": "Activist campaign", "x": 430.7, "y": 244.0, "r": 6.1, "outcome": "Concluded", "year": "2024", "ticker": "3391 JP Equity", "size": 2.0}, {"id": "JP-058", "sn": "Renesas Electronics — timing products business", "cg": "Cross-border outbound", "x": 320.7, "y": 511.8, "r": 10.5, "outcome": "Other/Unclear", "year": "2026", "ticker": null, "size": 2900.0}, {"id": "JP-059", "sn": "Nippon Sheet Glass", "cg": "Take-private / MBO", "x": 185.9, "y": 260.9, "r": 11.1, "outcome": "Other/Unclear", "year": "2026", "ticker": "5202 JP Equity", "size": 3700.0}, {"id": "JP-060", "sn": "Taiyo", "cg": "Activist campaign", "x": 468.6, "y": 248.8, "r": 10.8, "outcome": "Other/Unclear", "year": "2026", "ticker": "4626 JP Equity", "size": 3330.0}, {"id": "JP-061", "sn": "ROHM", "cg": "Strategic TOB", "x": 465.0, "y": 202.1, "r": 13.6, "outcome": "Other/Unclear", "year": "2026", "ticker": "6963 JP Equity", "size": 8300.0}, {"id": "JP-062", "sn": "MCJ", "cg": "Take-private / MBO", "x": 375.0, "y": 200.2, "r": 9.0, "outcome": "Other/Unclear", "year": "2026", "ticker": "6670 JP Equity", "size": 1300.0}], "edges": [{"s": "JP-001", "t": "JP-026", "w": 11.0}, {"s": "JP-001", "t": "JP-002", "w": 10.75}, {"s": "JP-001", "t": "JP-053", "w": 9.75}, {"s": "JP-001", "t": "JP-010", "w": 9.5}, {"s": "JP-002", "t": "JP-010", "w": 10.5}, {"s": "JP-002", "t": "JP-053", "w": 8.75}, {"s": "JP-002", "t": "JP-009", "w": 8.5}, {"s": "JP-003", "t": "JP-042", "w": 6.25}, {"s": "JP-003", "t": "JP-024", "w": 6.0}, {"s": "JP-003", "t": "JP-028", "w": 5.75}, {"s": "JP-003", "t": "JP-051", "w": 5.75}, {"s": "JP-004", "t": "JP-006", "w": 5.75}, {"s": "JP-004", "t": "JP-026", "w": 5.75}, {"s": "JP-002", "t": "JP-004", "w": 5.25}, {"s": "JP-004", "t": "JP-009", "w": 5.25}, {"s": "JP-005", "t": "JP-041", "w": 7.0}, {"s": "JP-005", "t": "JP-045", "w": 7.0}, {"s": "JP-005", "t": "JP-027", "w": 6.25}, {"s": "JP-005", "t": "JP-013", "w": 5.25}, {"s": "JP-006", "t": "JP-026", "w": 8.85}, {"s": "JP-006", "t": "JP-021", "w": 7.85}, {"s": "JP-006", "t": "JP-041", "w": 6.35}, {"s": "JP-006", "t": "JP-044", "w": 6.35}, {"s": "JP-007", "t": "JP-008", "w": 10.35}, {"s": "JP-007", "t": "JP-053", "w": 9.6}, {"s": "JP-007", "t": "JP-019", "w": 9.35}, {"s": "JP-007", "t": "JP-043", "w": 8.35}, {"s": "JP-008", "t": "JP-019", "w": 9.35}, {"s": "JP-008", "t": "JP-009", "w": 8.35}, {"s": "JP-008", "t": "JP-010", "w": 8.35}, {"s": "JP-009", "t": "JP-010", "w": 8.35}, {"s": "JP-009", "t": "JP-043", "w": 8.1}, {"s": "JP-011", "t": "JP-048", "w": 7.6}, {"s": "JP-011", "t": "JP-049", "w": 6.35}, {"s": "JP-011", "t": "JP-016", "w": 5.85}, {"s": "JP-011", "t": "JP-050", "w": 5.85}, {"s": "JP-012", "t": "JP-035", "w": 7.0}, {"s": "JP-012", "t": "JP-036", "w": 7.0}, {"s": "JP-012", "t": "JP-037", "w": 6.5}, {"s": "JP-012", "t": "JP-054", "w": 6.5}, {"s": "JP-013", "t": "JP-041", "w": 6.0}, {"s": "JP-013", "t": "JP-045", "w": 5.75}, {"s": "JP-013", "t": "JP-038", "w": 5.25}, {"s": "JP-014", "t": "JP-039", "w": 6.5}, {"s": "JP-013", "t": "JP-014", "w": 4.75}, {"s": "JP-014", "t": "JP-038", "w": 4.75}, {"s": "JP-014", "t": "JP-055", "w": 4.75}, {"s": "JP-015", "t": "JP-030", "w": 6.75}, {"s": "JP-015", "t": "JP-026", "w": 5.5}, {"s": "JP-006", "t": "JP-015", "w": 5.0}, {"s": "JP-015", "t": "JP-021", "w": 4.75}, {"s": "JP-016", "t": "JP-050", "w": 5.35}, {"s": "JP-016", "t": "JP-046", "w": 4.85}, {"s": "JP-016", "t": "JP-018", "w": 4.35}, {"s": "JP-017", "t": "JP-019", "w": 7.1}, {"s": "JP-007", "t": "JP-017", "w": 6.85}, {"s": "JP-017", "t": "JP-043", "w": 6.85}, {"s": "JP-017", "t": "JP-053", "w": 6.85}, {"s": "JP-018", "t": "JP-047", "w": 6.35}, {"s": "JP-018", "t": "JP-034", "w": 5.85}, {"s": "JP-018", "t": "JP-048", "w": 5.85}, {"s": "JP-018", "t": "JP-049", "w": 5.85}, {"s": "JP-009", "t": "JP-019", "w": 7.85}, {"s": "JP-010", "t": "JP-019", "w": 7.85}, {"s": "JP-007", "t": "JP-020", "w": 8.1}, {"s": "JP-001", "t": "JP-020", "w": 7.75}, {"s": "JP-020", "t": "JP-026", "w": 7.6}, {"s": "JP-020", "t": "JP-027", "w": 7.6}, {"s": "JP-021", "t": "JP-026", "w": 7.85}, {"s": "JP-020", "t": "JP-021", "w": 6.6}, {"s": "JP-021", "t": "JP-044", "w": 6.6}, {"s": "JP-006", "t": "JP-022", "w": 5.1}, {"s": "JP-022", "t": "JP-024", "w": 5.1}, {"s": "JP-022", "t": "JP-025", "w": 5.1}, {"s": "JP-022", "t": "JP-026", "w": 5.1}, {"s": "JP-006", "t": "JP-023", "w": 5.35}, {"s": "JP-023", "t": "JP-026", "w": 5.35}, {"s": "JP-003", "t": "JP-023", "w": 5.0}, {"s": "JP-007", "t": "JP-023", "w": 4.6}, {"s": "JP-001", "t": "JP-024", "w": 8.25}, {"s": "JP-010", "t": "JP-024", "w": 7.6}, {"s": "JP-002", "t": "JP-024", "w": 7.25}, {"s": "JP-024", "t": "JP-025", "w": 7.1}, {"s": "JP-025", "t": "JP-042", "w": 7.1}, {"s": "JP-025", "t": "JP-051", "w": 7.1}, {"s": "JP-025", "t": "JP-026", "w": 6.1}, {"s": "JP-027", "t": "JP-044", "w": 9.1}, {"s": "JP-027", "t": "JP-041", "w": 8.35}, {"s": "JP-027", "t": "JP-053", "w": 7.85}, {"s": "JP-001", "t": "JP-027", "w": 7.75}, {"s": "JP-028", "t": "JP-042", "w": 6.35}, {"s": "JP-028", "t": "JP-051", "w": 6.35}, {"s": "JP-024", "t": "JP-028", "w": 6.1}, {"s": "JP-025", "t": "JP-028", "w": 6.1}, {"s": "JP-007", "t": "JP-029", "w": 6.6}, {"s": "JP-008", "t": "JP-029", "w": 6.6}, {"s": "JP-009", "t": "JP-029", "w": 6.6}, {"s": "JP-010", "t": "JP-029", "w": 6.6}, {"s": "JP-021", "t": "JP-030", "w": 6.1}, {"s": "JP-006", "t": "JP-030", "w": 5.35}, {"s": "JP-026", "t": "JP-030", "w": 5.35}, {"s": "JP-031", "t": "JP-053", "w": 9.1}, {"s": "JP-001", "t": "JP-031", "w": 7.75}, {"s": "JP-031", "t": "JP-041", "w": 7.6}, {"s": "JP-008", "t": "JP-031", "w": 7.1}, {"s": "JP-001", "t": "JP-032", "w": 4.75}, {"s": "JP-011", "t": "JP-032", "w": 2.85}, {"s": "JP-027", "t": "JP-032", "w": 2.85}, {"s": "JP-005", "t": "JP-032", "w": 2.75}, {"s": "JP-033", "t": "JP-046", "w": 5.35}, {"s": "JP-033", "t": "JP-048", "w": 4.6}, {"s": "JP-033", "t": "JP-050", "w": 4.6}, {"s": "JP-011", "t": "JP-033", "w": 4.35}, {"s": "JP-034", "t": "JP-049", "w": 6.35}, {"s": "JP-034", "t": "JP-047", "w": 5.85}, {"s": "JP-011", "t": "JP-034", "w": 5.35}, {"s": "JP-035", "t": "JP-036", "w": 7.1}, {"s": "JP-035", "t": "JP-037", "w": 6.6}, {"s": "JP-035", "t": "JP-054", "w": 6.6}, {"s": "JP-036", "t": "JP-037", "w": 6.6}, {"s": "JP-036", "t": "JP-054", "w": 6.6}, {"s": "JP-037", "t": "JP-054", "w": 6.1}, {"s": "JP-038", "t": "JP-055", "w": 5.35}, {"s": "JP-037", "t": "JP-038", "w": 4.6}, {"s": "JP-037", "t": "JP-039", "w": 4.6}, {"s": "JP-038", "t": "JP-039", "w": 4.6}, {"s": "JP-039", "t": "JP-055", "w": 4.6}, {"s": "JP-024", "t": "JP-040", "w": 6.35}, {"s": "JP-025", "t": "JP-040", "w": 5.35}, {"s": "JP-040", "t": "JP-042", "w": 4.85}, {"s": "JP-008", "t": "JP-040", "w": 4.35}, {"s": "JP-041", "t": "JP-045", "w": 9.6}, {"s": "JP-041", "t": "JP-060", "w": 8.85}, {"s": "JP-041", "t": "JP-053", "w": 8.1}, {"s": "JP-042", "t": "JP-051", "w": 7.35}, {"s": "JP-024", "t": "JP-042", "w": 6.6}, {"s": "JP-002", "t": "JP-043", "w": 8.5}, {"s": "JP-008", "t": "JP-043", "w": 8.1}, {"s": "JP-041", "t": "JP-044", "w": 6.85}, {"s": "JP-044", "t": "JP-053", "w": 6.85}, {"s": "JP-001", "t": "JP-044", "w": 6.75}, {"s": "JP-027", "t": "JP-045", "w": 5.85}, {"s": "JP-011", "t": "JP-046", "w": 5.35}, {"s": "JP-018", "t": "JP-046", "w": 4.85}, {"s": "JP-047", "t": "JP-049", "w": 5.85}, {"s": "JP-011", "t": "JP-047", "w": 4.85}, {"s": "JP-001", "t": "JP-048", "w": 6.5}, {"s": "JP-012", "t": "JP-048", "w": 6.0}, {"s": "JP-046", "t": "JP-050", "w": 4.85}, {"s": "JP-049", "t": "JP-050", "w": 4.85}, {"s": "JP-024", "t": "JP-051", "w": 6.1}, {"s": "JP-028", "t": "JP-052", "w": 5.1}, {"s": "JP-031", "t": "JP-052", "w": 5.1}, {"s": "JP-004", "t": "JP-052", "w": 4.75}, {"s": "JP-006", "t": "JP-052", "w": 4.1}, {"s": "JP-053", "t": "JP-060", "w": 10.85}, {"s": "JP-013", "t": "JP-055", "w": 5.25}, {"s": "JP-037", "t": "JP-055", "w": 4.6}, {"s": "JP-056", "t": "JP-061", "w": 5.35}, {"s": "JP-024", "t": "JP-056", "w": 4.85}, {"s": "JP-031", "t": "JP-056", "w": 4.85}, {"s": "JP-041", "t": "JP-056", "w": 4.85}, {"s": "JP-057", "t": "JP-060", "w": 7.85}, {"s": "JP-007", "t": "JP-057", "w": 5.85}, {"s": "JP-053", "t": "JP-057", "w": 5.85}, {"s": "JP-041", "t": "JP-057", "w": 5.35}, {"s": "JP-018", "t": "JP-058", "w": 5.35}, {"s": "JP-048", "t": "JP-058", "w": 5.35}, {"s": "JP-049", "t": "JP-058", "w": 4.85}, {"s": "JP-050", "t": "JP-058", "w": 4.85}, {"s": "JP-001", "t": "JP-059", "w": 6.75}, {"s": "JP-043", "t": "JP-059", "w": 6.6}, {"s": "JP-008", "t": "JP-059", "w": 5.6}, {"s": "JP-009", "t": "JP-059", "w": 5.6}, {"s": "JP-001", "t": "JP-060", "w": 7.5}, {"s": "JP-024", "t": "JP-061", "w": 5.35}, {"s": "JP-060", "t": "JP-061", "w": 5.35}, {"s": "JP-001", "t": "JP-061", "w": 5.0}, {"s": "JP-010", "t": "JP-062", "w": 4.85}, {"s": "JP-001", "t": "JP-062", "w": 4.5}, {"s": "JP-002", "t": "JP-062", "w": 4.5}, {"s": "JP-007", "t": "JP-062", "w": 3.85}], "centroids": {"Activist campaign": {"x": 621.4, "y": 344.5, "count": 14, "ids": ["JP-012", "JP-013", "JP-014", "JP-035", "JP-036", "JP-037", "JP-038", "JP-039", "JP-041", "JP-045", "JP-054", "JP-055", "JP-057", "JP-060"]}, "Strategic TOB": {"x": 435.8, "y": 193.8, "count": 3, "ids": ["JP-023", "JP-056", "JP-061"]}, "Other": {"x": 380.6, "y": 231.2, "count": 4, "ids": ["JP-005", "JP-022", "JP-032", "JP-052"]}, "Contested / hostile bid": {"x": 174.8, "y": 206.6, "count": 6, "ids": ["JP-004", "JP-006", "JP-015", "JP-021", "JP-026", "JP-030"]}, "Cross-border outbound": {"x": 354.2, "y": 533.5, "count": 12, "ids": ["JP-011", "JP-016", "JP-018", "JP-033", "JP-034", "JP-044", "JP-046", "JP-047", "JP-048", "JP-049", "JP-050", "JP-058"]}, "Take-private / MBO": {"x": 314.3, "y": 257.5, "count": 16, "ids": ["JP-001", "JP-002", "JP-007", "JP-008", "JP-009", "JP-010", "JP-017", "JP-019", "JP-020", "JP-027", "JP-029", "JP-031", "JP-043", "JP-053", "JP-059", "JP-062"]}, "Parent-subsidiary / carve-out": {"x": 353.7, "y": 88.1, "count": 7, "ids": ["JP-003", "JP-024", "JP-025", "JP-028", "JP-040", "JP-042", "JP-051"]}}, "finder": [{"id": "JP-026", "sn": "Fuji Soft", "ticker": "9749 JP Equity", "score": 5.0, "cg": "Contested / hostile bid", "outcome": "Concluded", "year": "2024", "reasons": ["category_group", "competing_bid_flag", "price_was_bumped_bool"]}, {"id": "JP-006", "sn": "Benefit One", "ticker": "2412 JP Equity", "score": 4.5, "cg": "Contested / hostile bid", "outcome": "Concluded", "year": "2023", "reasons": ["category_group", "competing_bid_flag", "price_was_bumped_bool"]}, {"id": "JP-021", "sn": "C&F Logistics", "ticker": "9099 JP Equity", "score": 4.5, "cg": "Contested / hostile bid", "outcome": "Concluded", "year": "2024", "reasons": ["category_group", "competing_bid_flag", "price_was_bumped_bool"]}, {"id": "JP-015", "sn": "Toyo Construction", "ticker": "1890 JP Equity", "score": 4.0, "cg": "Contested / hostile bid", "outcome": "Failed", "year": "2022", "reasons": ["category_group", "competing_bid_flag", "structure_has_TOB"]}, {"id": "JP-030", "sn": "Makino Milling Machine", "ticker": "6135 JP Equity", "score": 3.5, "cg": "Contested / hostile bid", "outcome": "Failed", "year": "2024", "reasons": ["category_group", "competing_bid_flag", "structure_has_TOB"]}], "cluster_ids": ["JP-004", "JP-006", "JP-015", "JP-021", "JP-026", "JP-030"], "cluster_edges": [{"s": "JP-004", "t": "JP-006", "w": 5.75}, {"s": "JP-004", "t": "JP-026", "w": 5.75}, {"s": "JP-006", "t": "JP-026", "w": 8.85}, {"s": "JP-006", "t": "JP-021", "w": 7.85}, {"s": "JP-015", "t": "JP-030", "w": 6.75}, {"s": "JP-015", "t": "JP-026", "w": 5.5}, {"s": "JP-006", "t": "JP-015", "w": 5.0}, {"s": "JP-015", "t": "JP-021", "w": 4.75}, {"s": "JP-021", "t": "JP-026", "w": 7.85}, {"s": "JP-021", "t": "JP-030", "w": 6.1}, {"s": "JP-006", "t": "JP-030", "w": 5.35}, {"s": "JP-026", "t": "JP-030", "w": 5.35}], "fuji_neighbors": [{"id": "JP-001", "sn": "Toshiba", "ticker": "6502 JP Equity", "cg": "Take-private / MBO", "outcome": "Concluded", "score": 11.0, "similar3": "Both cases turned on the same activist register — 3D Investment and Farallon held decisive stakes in each. Each was a contested situation the board ultimately steered toward one bidder. Both closed through a squeeze-out and delisting."}, {"id": "JP-006", "sn": "Benefit One", "ticker": "2412 JP Equity", "cg": "Contested / hostile bid", "outcome": "Concluded", "score": 8.85, "similar3": "Both were contested bidding wars with a genuine price bump between rival suitors. In each the board recommended one side and the loser withdrew. Both resolved through a completed tender offer and squeeze-out."}, {"id": "JP-021", "sn": "C&F Logistics", "ticker": "9099 JP Equity", "cg": "Contested / hostile bid", "outcome": "Concluded", "score": 7.85, "similar3": "Both saw a competing bid drive the price sharply higher before one suitor withdrew. Interloper pressure surfaced value in each. Both ended with the winning tender offer and a squeeze-out."}, {"id": "JP-020", "sn": "Roland DG", "ticker": "6789 JP Equity", "cg": "Take-private / MBO", "outcome": "Concluded", "score": 7.6, "similar3": "Both pitted a favored buyer against an unsolicited interloper in the technology sector. In each the board rejected the higher-headline bid on qualitative grounds. Both closed via the board-backed offer after the challenger withdrew."}, {"id": "JP-025", "sn": "Infocom", "ticker": "4348 JP Equity", "cg": "Parent-subsidiary / carve-out", "outcome": "Concluded", "score": 6.1, "similar3": "Both were technology-sector take-privates run through a special committee with a board recommendation. Each carried a competing-bid dynamic before resolution. Both ended in a sponsor-led squeeze-out and delisting."}], "fuji_ticker": "9749 JP Equity", "fuji_second": [{"id": "JP-002", "sn": "JSR", "ticker": "4185 JP Equity", "cg": "Take-private / MBO", "outcome": "Concluded", "score": 10.75, "via": "JP-001"}, {"id": "JP-053", "sn": "Fujitec", "ticker": "6406 JP Equity", "cg": "Take-private / MBO", "outcome": "Concluded", "score": 9.75, "via": "JP-001"}, {"id": "JP-010", "sn": "Shinko Electric Industries", "ticker": "6967 JP Equity", "cg": "Take-private / MBO", "outcome": "Concluded", "score": 9.5, "via": "JP-001"}, {"id": "JP-024", "sn": "Alps Logistics", "ticker": "9055 JP Equity", "cg": "Parent-subsidiary / carve-out", "outcome": "Concluded", "score": 8.25, "via": "JP-001"}, {"id": "JP-007", "sn": "Taisho Pharmaceutical", "ticker": "4581 JP Equity", "cg": "Take-private / MBO", "outcome": "Concluded", "score": 8.1, "via": "JP-020"}, {"id": "JP-027", "sn": "Seven & i", "ticker": "3382 JP Equity", "cg": "Take-private / MBO", "outcome": "Failed", "score": 7.75, "via": "JP-001"}, {"id": "JP-031", "sn": "Makino Milling Machine", "ticker": "6135 JP Equity", "cg": "Take-private / MBO", "outcome": "Concluded", "score": 7.75, "via": "JP-001"}, {"id": "JP-060", "sn": "Taiyo", "ticker": "4626 JP Equity", "cg": "Activist campaign", "outcome": "Other/Unclear", "score": 7.5, "via": "JP-001"}, {"id": "JP-042", "sn": "NTT Data", "ticker": "9613 JP Equity", "cg": "Parent-subsidiary / carve-out", "outcome": "Concluded", "score": 7.1, "via": "JP-025"}, {"id": "JP-051", "sn": "SCSK", "ticker": "9719 JP Equity", "cg": "Parent-subsidiary / carve-out", "outcome": "Concluded", "score": 7.1, "via": "JP-025"}]};
+const PALETTE={
+  light:{'Take-private / MBO':'#3465b4','Activist campaign':'#8a55a0','Cross-border outbound':'#12939f','Parent-subsidiary / carve-out':'#bd8712','Contested / hostile bid':'#c04a2e','Strategic TOB':'#55823d','Other':'#8a8578'},
+  dark:{'Take-private / MBO':'#5a8ee0','Activist campaign':'#b07fc4','Cross-border outbound':'#1f9aa6','Parent-subsidiary / carve-out':'#b58729','Contested / hostile bid':'#e0674a','Strategic TOB':'#6a9a50','Other':'#9a938a'}
+};
+const DISP={'Cross-border outbound':'Cross-border','Parent-subsidiary / carve-out':'Parent-subsidiary'};
+const disp=cg=>DISP[cg]||cg;
+let theme=localStorage.getItem('atlas-theme')||'light';
+const clr=()=>PALETTE[theme];
+const NS='http://www.w3.org/2000/svg';
+const bubble=document.getElementById('bubble');
+const byId={}; DATA.nodes.forEach(n=>byId[n.id]=n);
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function showBubble(ev,h){bubble.innerHTML=h;bubble.classList.add('on');moveBubble(ev);}
+function moveBubble(ev){let x=ev.clientX+16,y=ev.clientY-10;if(x+300>innerWidth)x=ev.clientX-316;bubble.style.left=x+'px';bubble.style.top=Math.max(52,y)+'px';}
+function hideBubble(){bubble.classList.remove('on');}
+
+const SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke-linecap="round"/></svg>';
+const MOON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.3 6.3 0 0 0 10.5 10.5z" stroke-linejoin="round"/></svg>';
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme',theme);
+  document.getElementById('themeToggle').innerHTML=theme==='dark'?SUN:MOON;
+  document.querySelectorAll('circle.map-node').forEach(c=>c.setAttribute('fill',clr()[c.dataset.cg]||clr()['Other']));
+  document.querySelectorAll('[data-dot]').forEach(d=>d.style.background=clr()[d.dataset.dot]);
+}
+document.getElementById('themeToggle').onclick=()=>{theme=theme==='dark'?'light':'dark';localStorage.setItem('atlas-theme',theme);applyTheme();};
+
+function makeMap(nodeEls,edgeEls){
+  function focus(ids){const s=new Set(ids);
+    nodeEls.forEach(c=>{const on=s.has(c.dataset.id);c.classList.toggle('dim',!on);c.setAttribute('r',on?(+c.dataset.baseR*1.28):c.dataset.baseR);});
+    edgeEls.forEach(l=>l.classList.toggle('dim',!(s.has(l.dataset.s)&&s.has(l.dataset.t))));}
+  function clear(){nodeEls.forEach(c=>{c.classList.remove('dim');c.setAttribute('r',c.dataset.baseR);});
+    edgeEls.forEach(l=>l.classList.remove('dim'));}
+  return {focus,clear};
+}
+function fit(ids,W,H,pad){const ns=ids.map(id=>byId[id]);const xs=ns.map(n=>n.x),ys=ns.map(n=>n.y);
+  const mnx=Math.min(...xs),mxx=Math.max(...xs),mny=Math.min(...ys),mxy=Math.max(...ys);
+  const bw=(mxx-mnx)||1,bh=(mxy-mny)||1,s=Math.min((W-2*pad)/bw,(H-2*pad)/bh);
+  return {tx:x=>x*s+(W-bw*s)/2-mnx*s, ty:y=>y*s+(H-bh*s)/2-mny*s, s};}
+
+// ================= LAYER 1 =================
+let landingMap;
+(function(){
+  const svg=document.getElementById('constellation'), stage=document.getElementById('stage');
+  const vp=el('g',{id:'viewport'},svg);              // pan/zoom target
+  const eg=el('g',{},vp), cg=el('g',{},vp), lg=el('g',{},vp);  // edges, cluster-groups, labels
+  const tag=document.getElementById('clusterTag');
+
+  // fit stage height so the whole map shows in any window
+  function fitStage(){
+    const avail=Math.max(320, innerHeight - 200);
+    const byWidth=stage.clientWidth*640/1000;
+    stage.style.height=Math.min(byWidth,avail)+'px';
+  }
+  fitStage(); addEventListener('resize',fitStage);
+
+  const drift=DATA.nodes.map((n,i)=>({
+    ax:3.2+(i%3)*1.1, ay:2.8+((i*7)%3)*1.1, px:i*0.9, py:i*1.7, sx:0.5+((i%5)*0.06), sy:0.42+((i%4)*0.06),
+    bx:1.5+((i*3)%3)*0.6, by:1.4+((i*5)%3)*0.6, qx:i*2.3, qy:i*1.1, tx:1.15+((i%3)*0.12), ty:0.95+((i%4)*0.1)}));
+  const edgeObj=DATA.edges.map(e=>{const s=byId[e.s],t=byId[e.t];
+    const l=el('line',{x1:s.x,y1:s.y,x2:t.x,y2:t.y,class:'map-edge',stroke:'var(--ink)','stroke-opacity':0.05+Math.min(e.w,12)/12*0.09,'stroke-width':0.5+Math.min(e.w,12)/12},eg);
+    l.dataset.s=e.s;l.dataset.t=e.t;return {l,s,t};});
+  const named=new Set([...DATA.nodes].sort((a,b)=>b.size-a.size).slice(0,10).map(n=>n.id));
+  // deal-size distribution of the universe → 95th percentile + per-node percentile rank
+  const sizes=DATA.nodes.map(n=>n.size||0).sort((a,b)=>a-b);
+  const p95=sizes[Math.floor(0.95*(sizes.length-1))];
+  DATA.nodes.forEach(n=>{const v=n.size||0; let c=0; for(const s of sizes) if(s<=v)c++; n._pct=c/sizes.length*100;});
+  const labelBy={};
+  // cluster hit-zones (behind their nodes) for hover naming/spotlight
+  const clusterG={};
+  Object.entries(DATA.centroids).forEach(([k,ctr])=>{
+    const g=el('g',{},cg); g.dataset.cg=k;
+    const mem=ctr.ids.map(id=>byId[id]);
+    const rad=Math.max(...mem.map(m=>Math.hypot(m.x-ctr.x,m.y-ctr.y)))+30;
+    el('circle',{cx:ctr.x,cy:ctr.y,r:rad,fill:'transparent',style:'cursor:grab'},g);
+    g.addEventListener('mouseenter',()=>spot(k,true));
+    g.addEventListener('mouseleave',()=>spot(k,false));
+    clusterG[k]=g;
+  });
+  const nodeObj=DATA.nodes.map(n=>{
+    const g=clusterG[n.cg]||cg;
+    const c=el('circle',{cx:n.x,cy:n.y,r:n.r,class:'map-node',fill:clr()[n.cg]||clr()['Other'],'fill-opacity':0.9,stroke:'var(--washi)','stroke-width':1.6},g);
+    c.dataset.id=n.id;c.dataset.cg=n.cg;c.dataset.baseR=n.r;
+    const lbl=el('text',{x:n.x,y:n.y+n.r+13,'text-anchor':'middle','font-size':10.5,fill:'var(--ink-2)','font-family':'var(--sans)',class:'map-label'+(named.has(n.id)?' named':'')},lg);
+    lbl.textContent=n.sn; labelBy[n.id]=lbl;
+    c.addEventListener('mousemove',ev=>{showBubble(ev,`<div class="b-name">${n.sn}</div><div class="b-tick">${n.ticker||n.cg}</div><div class="b-body">${disp(n.cg)}${n.year!=='?'?' · '+n.year:''}${n.outcome?' · '+n.outcome:''}</div>`);});
+    c.addEventListener('mouseleave',()=>hideBubble());
+    c.addEventListener('click',()=>{ if(!svg._panned) location.hash='#case'; });
+    return {c,n,lbl};});
+  landingMap=makeMap(nodeObj.map(o=>o.c),edgeObj.map(o=>o.l));
+
+  function spot(k,on){
+    if(on){ landingMap.focus(DATA.centroids[k].ids);
+      DATA.centroids[k].ids.forEach(id=>{ if((byId[id].size||0)>p95) labelBy[id].classList.add('show'); });
+      const ctr=DATA.centroids[k], mem=ctr.ids.map(id=>byId[id]);
+      const topY=Math.min(...mem.map(m=>m.y-(m.r||6)));           // top edge of the cluster's nodes
+      const p=svg.createSVGPoint(); p.x=ctr.x; p.y=topY; const q=p.matrixTransform(vp.getScreenCTM());
+      const s=stage.getBoundingClientRect();
+      tag.textContent=disp(k); tag.style.left=(q.x-s.left)+'px'; tag.style.top=(q.y-s.top-4)+'px'; tag.classList.add('on');
+    } else { landingMap.clear(); document.querySelectorAll('#viewport .map-label.show').forEach(l=>l.classList.remove('show')); tag.classList.remove('on'); }
+  }
+
+  // legend (2nd scroll) — hover spotlights cluster
+  const counts={};DATA.nodes.forEach(n=>counts[n.cg]=(counts[n.cg]||0)+1);
+  const sl=document.getElementById('sideLegend');
+  Object.keys(PALETTE.light).forEach(k=>{if(!counts[k])return;
+    const chip=document.createElement('span');chip.className='chip';
+    chip.innerHTML=`<span class="dot" data-dot="${k}"></span>${disp(k)}`;
+    chip.addEventListener('mouseenter',()=>spot(k,true));
+    chip.addEventListener('mouseleave',()=>spot(k,false));
+    chip.addEventListener('click',()=>location.hash='#cluster');
+    sl.appendChild(chip);});
+
+  // ---- pan / zoom ----
+  let zx=0,zy=0,zs=1;
+  function revealByZoom(){ // gradient: bigger deals reveal first, everything by ~4x
+    const th=Math.max(0,100-(zs-1.3)/(4-1.3)*100);
+    nodeObj.forEach(o=>o.lbl.classList.toggle('zshow', zs>1.15 && (o.n._pct||0)>=th)); }
+  function applyZoom(){ vp.setAttribute('transform',`translate(${zx} ${zy}) scale(${zs})`); revealByZoom();
+    document.getElementById('exploreHint').style.opacity=zs>1?0:''; }
+  function clampPan(){ zx=Math.min(0,Math.max(-(zs-1)*1000,zx)); zy=Math.min(0,Math.max(-(zs-1)*640,zy)); }
+  function toVB(cx,cy){ const m=svg.getScreenCTM().inverse(); const p=svg.createSVGPoint(); p.x=cx;p.y=cy; const q=p.matrixTransform(m); return {x:q.x,y:q.y}; }
+  function zoomTo(ns,px,py){ ns=Math.min(5,Math.max(1,ns)); zx+=(zs-ns)*px; zy+=(zs-ns)*py; zs=ns; clampPan(); applyZoom(); }
+  document.getElementById('zIn').onclick=()=>zoomTo(zs*1.4,500,320);
+  document.getElementById('zOut').onclick=()=>zoomTo(zs/1.4,500,320);
+  document.getElementById('zReset').onclick=()=>{zx=zy=0;zs=1;applyZoom();};
+  svg.addEventListener('dblclick',ev=>{const v=toVB(ev.clientX,ev.clientY); zoomTo(zs<3?zs*1.7:1, v.x,v.y);});
+  // trackpad pinch = ctrl+wheel; plain wheel is left alone so it still drives the scroll choreography
+  svg.addEventListener('wheel',ev=>{ if(!ev.ctrlKey)return; ev.preventDefault(); const v=toVB(ev.clientX,ev.clientY); zoomTo(zs*Math.exp(-ev.deltaY*0.01), v.x,v.y); },{passive:false});
+  // drag pan (mouse always; touch only when zoomed so 1-finger scroll still works at rest)
+  let dragging=false,last=null,pts=new Map(),pinchD=0;
+  svg.addEventListener('pointerdown',ev=>{ pts.set(ev.pointerId,ev);
+    if(pts.size===2){ const a=[...pts.values()]; pinchD=Math.hypot(a[0].clientX-a[1].clientX,a[0].clientY-a[1].clientY); return; }
+    if(ev.pointerType==='touch'&&zs===1) return;   // let page scroll at rest on touch
+    dragging=true; svg._panned=false; last=toVB(ev.clientX,ev.clientY); svg.classList.add('grabbing'); svg.setPointerCapture(ev.pointerId);
+  });
+  svg.addEventListener('pointermove',ev=>{
+    if(pts.has(ev.pointerId))pts.set(ev.pointerId,ev);
+    if(pts.size===2){ const a=[...pts.values()]; const d=Math.hypot(a[0].clientX-a[1].clientX,a[0].clientY-a[1].clientY);
+      const mid=toVB((a[0].clientX+a[1].clientX)/2,(a[0].clientY+a[1].clientY)/2);
+      if(pinchD)zoomTo(zs*(d/pinchD),mid.x,mid.y); pinchD=d; return; }
+    if(!dragging)return; const v=toVB(ev.clientX,ev.clientY); const dx=v.x-last.x,dy=v.y-last.y;
+    if(Math.abs(dx)+Math.abs(dy)>3)svg._panned=true;
+    zx+=dx*zs; zy+=dy*zs; clampPan(); applyZoom(); last=toVB(ev.clientX,ev.clientY);
+  });
+  function endPt(ev){ pts.delete(ev.pointerId); if(pts.size<2)pinchD=0; if(pts.size===0){dragging=false;svg.classList.remove('grabbing');} }
+  svg.addEventListener('pointerup',endPt); svg.addEventListener('pointercancel',endPt);
+
+  // drift
+  let t0=null;
+  function frame(ts){ if(t0===null)t0=ts; const t=(ts-t0)/1000;
+    nodeObj.forEach((o,i)=>{const dr=drift[i];
+      const x=o.n.x+Math.sin(t*dr.sx+dr.px)*dr.ax+Math.sin(t*dr.tx+dr.qx)*dr.bx,
+            y=o.n.y+Math.cos(t*dr.sy+dr.py)*dr.ay+Math.cos(t*dr.ty+dr.qy)*dr.by;
+      o.c.setAttribute('cx',x);o.c.setAttribute('cy',y);o.n._x=x;o.n._y=y; o.lbl.setAttribute('x',x);o.lbl.setAttribute('y',y+o.n.r+13);});
+    edgeObj.forEach(o=>{o.l.setAttribute('x1',o.s._x??o.s.x);o.l.setAttribute('y1',o.s._y??o.s.y);o.l.setAttribute('x2',o.t._x??o.t.x);o.l.setAttribute('y2',o.t._y??o.t.y);});
+    requestAnimationFrame(frame);}
+  requestAnimationFrame(frame);
+
+  // ---- scroll choreography ----
+  const marquee=document.getElementById('cornerMarquee'),legend=document.getElementById('sideLegend'),
+        overlay=document.getElementById('dimOverlay'),cta=document.getElementById('ctaFloat'),cue=document.getElementById('scrollCue');
+  if(window.gsap&&window.ScrollTrigger){
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.set(legend,{autoAlpha:0}); gsap.set(overlay,{autoAlpha:0}); gsap.set(cta,{autoAlpha:0,y:18});
+    const tl=gsap.timeline({scrollTrigger:{trigger:'#landing',start:'top top',end:'+=1500',scrub:0.6,pin:true,
+      onUpdate:self=>{ cta.classList.toggle('live',self.progress>0.72); if(self.progress>0.05)gsap.to(cue,{autoAlpha:0,duration:.3,overwrite:true}); }}});
+    tl.to(marquee,{autoAlpha:0,duration:.8},0.15)
+      .to(legend,{autoAlpha:1,duration:.8},0.55)
+      .to(overlay,{autoAlpha:.5,duration:1.1},1.35)
+      .to(cta,{autoAlpha:1,y:0,duration:1},1.55);
+    setTimeout(()=>ScrollTrigger.refresh(),400);
+  } else { legend.style.opacity=1; cta.style.opacity=1; cta.classList.add('live'); cue.style.display='none';
+    cta.style.position='static';cta.style.transform='none';cta.style.margin='24px auto 0'; }
+})();
+
+// ================= FINDER =================
+(function(){
+  const FACTS=[['sponsor','Unlisted / PE sponsor'],['bump','Price bump likely'],['activist','Activists in the register'],['multijur','Multi-jurisdiction review'],['toehold','Toehold / irrevocables']];
+  const preset=new Set(['sponsor','bump']);
+  document.getElementById('factbtns').innerHTML=FACTS.map(([k,l])=>`<span class="pill${preset.has(k)?' on':''}" data-k="${k}">${l}</span>`).join('');
+  document.querySelectorAll('#finder .pill').forEach(p=>p.onclick=()=>p.classList.toggle('on'));
+  document.querySelectorAll('.madlib select').forEach(sel=>{ let eng=false;
+    sel.addEventListener('pointerdown',()=>eng=true);
+    sel.addEventListener('change',()=>{sel.classList.add('chosen');eng=false;});
+    sel.addEventListener('blur',()=>{if(eng){sel.classList.add('chosen');eng=false;}}); });
+  const advT=document.getElementById('advToggle'),advP=document.getElementById('advPanel');
+  advT.onclick=()=>{advT.classList.toggle('open');advP.classList.toggle('open');};
+  document.getElementById('findBtn').onclick=e=>{e.preventDefault();document.getElementById('results-anchor').scrollIntoView({behavior:'smooth'});};
+  const R={'category_group':'same archetype','competing_bid_flag':'competing bid','structure_has_TOB':'tender offer','acquirer_is_unlisted':'PE / unlisted sponsor','price_was_bumped_bool':'price bump'};
+  const max=DATA.finder[0].score;
+  document.getElementById('results').innerHTML=DATA.finder.map((r,i)=>`
+    <div class="result"><div class="rank">${i+1}</div>
+      <div><div class="name"><a href="#case">${r.sn}</a><span class="tick">${r.ticker||''}</span></div>
+        <div class="meta">${disp(r.cg)} · ${r.year} · ${r.outcome}</div>
+        <div class="why">${r.reasons.map(x=>`<em>${R[x]||x.replace(/_/g,' ')}</em>`).join('')}</div></div>
+      <div><div class="score-num">${r.score.toFixed(1)} pts</div><div class="scorebar"><i style="width:${r.score/max*100}%"></i></div></div>
+    </div>`).join('');
+})();
+
+// ================= LAYER 2 =================
+(function(){
+  const svg=document.getElementById('clusterview');const W=820,H=360;
+  const ids=DATA.cluster_ids; const f=fit(ids,W,H,90);
+  const eg=el('g',{},svg),ng=el('g',{},svg);
+  const pos={}; ids.forEach(id=>{const n=byId[id];pos[id]={x:f.tx(n.x),y:f.ty(n.y),n};});
+  const edgeEls=DATA.cluster_edges.filter(e=>pos[e.s]&&pos[e.t]).map(e=>{const a=pos[e.s],b=pos[e.t];
+    const l=el('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,class:'map-edge',stroke:'var(--ink)','stroke-opacity':0.12,'stroke-width':0.8+Math.min(e.w,12)/12*1.5},eg);
+    l.dataset.s=e.s;l.dataset.t=e.t;return l;});
+  const drift=ids.map((_,i)=>({a:3+(i%3),p:i*1.3,s:0.5+(i%3)*0.1}));
+  const cy=H/2;
+  const nodeObj=ids.map((id,i)=>{const p=pos[id];const r=Math.max(16,Math.min(38,p.n.r*f.s));
+    const g=el('g',{},ng);
+    const c=el('circle',{cx:p.x,cy:p.y,r:r,class:'map-node',fill:clr()[p.n.cg],'fill-opacity':0.9,stroke:'var(--washi)','stroke-width':2.2},g);
+    c.dataset.id=id;c.dataset.cg=p.n.cg;c.dataset.baseR=r;
+    const above=p.y<cy;
+    const l1=el('text',{x:p.x,y:above?p.y-r-15:p.y+r+17,'text-anchor':'middle','font-size':13,fill:'var(--ink)','font-family':'var(--serif)'},g);l1.textContent=p.n.sn;
+    const l2=el('text',{x:p.x,y:above?p.y-r-2:p.y+r+31,'text-anchor':'middle','font-size':9.5,fill:'var(--ink-3)','font-family':'var(--mono)'},g);l2.textContent=p.n.outcome;
+    c.addEventListener('mousemove',ev=>{map.focus([id]);showBubble(ev,`<div class="b-name">${p.n.sn}</div><div class="b-tick">${p.n.ticker||''}</div><div class="b-body">${p.n.hover1||''}</div>`);});
+    c.addEventListener('mouseleave',()=>{map.clear();hideBubble();});
+    c.addEventListener('click',()=>location.hash='#case');
+    return {c,p,r,l1,l2,above};});
+  const map=makeMap(nodeObj.map(o=>o.c),edgeEls);
+  let t0=null;
+  function frame(ts){if(t0===null)t0=ts;const t=(ts-t0)/1000;
+    nodeObj.forEach((o,i)=>{const d=drift[i];const y=o.p.y+Math.sin(t*d.s+d.p)*d.a;
+      o.c.setAttribute('cy',y);o.l1.setAttribute('y',(o.above?y-o.r-15:y+o.r+17));o.l2.setAttribute('y',(o.above?y-o.r-2:y+o.r+31));o.p._y=y;});
+    edgeEls.forEach(l=>{const a=pos[l.dataset.s],b=pos[l.dataset.t];l.setAttribute('y1',a._y??a.y);l.setAttribute('y2',b._y??b.y);});
+    requestAnimationFrame(frame);}
+  requestAnimationFrame(frame);
+  const st=o=>o==='Failed'?'<span class="status-tag fail">Failed</span>':o==='Concluded'?'<span class="status-tag ok">Completed</span>':`<span class="status-tag">${o}</span>`;
+  document.getElementById('mechlist').innerHTML=ids.map(id=>{const n=byId[id];return `
+    <li><div class="m-head"><b>${n.sn}</b><span class="m-tick">${n.ticker||''}</span>${st(n.outcome)}</div>${n.resolve3||''}</li>`;}).join('');
+})();
+
+// ================= LAYER 3 =================
+(function(){
+  const svg=document.getElementById('similarview');const W=740,H=440;
+  const inner=DATA.fuji_neighbors.map(n=>n.id), sec=DATA.fuji_second.map(n=>n.id);
+  const all=['JP-026',...inner,...sec]; const f=fit(all,W,H,70);
+  const P=id=>({x:f.tx(byId[id].x),y:f.ty(byId[id].y)});
+  const eg=el('g',{},svg),mg=el('g',{},svg),ng=el('g',{},svg);
+  const state={}, edgeRefs=[], nodeEls=[]; let di=0;
+  const mkDrift=i=>({ax:2+(i%3)*0.7,ay:1.8+((i*3)%3)*0.7,sx:0.5+((i%5)*0.06),sy:0.44+((i%4)*0.06),px:i*1.3,py:i*0.7,
+    bx:1+((i*2)%3)*0.5,by:0.9+((i*4)%3)*0.5,tx:1.1+((i%3)*0.1),ty:0.9+((i%4)*0.1),qx:i*1.7,qy:i*2.1});
+  const reg=(id,g)=>{const p=P(id);state[id]={bx:p.x,by:p.y,g,dx:0,dy:0,dr:mkDrift(di++)};};
+  const fp=P('JP-026');
+  // second-degree edges (sec -> its via first-degree node)
+  DATA.fuji_second.forEach(o=>{const l=el('line',{class:'map-edge',stroke:'var(--ink)','stroke-opacity':0.06},eg);edgeRefs.push({l,a:o.id,b:o.via});});
+  // inner edges (Fuji -> neighbour)
+  const edgeEls=DATA.fuji_neighbors.map(o=>{const l=el('line',{class:'map-edge',stroke:'var(--ink)','stroke-opacity':0.1+o.score/12*0.14,'stroke-width':0.8+o.score/12*2.2},eg);
+    l.dataset.s='JP-026';l.dataset.t=o.id;edgeRefs.push({l,a:'JP-026',b:o.id});return l;});
+  // second-degree nodes (dimmed)
+  DATA.fuji_second.forEach(o=>{const p=P(o.id);const g=el('g',{},mg);
+    const c=el('circle',{cx:p.x,cy:p.y,r:8,class:'map-node dim2',fill:clr()[o.cg],'fill-opacity':0.9,stroke:'var(--washi)','stroke-width':1.5},g);
+    c.dataset.id=o.id;c.dataset.cg=o.cg;c.dataset.baseR=8;nodeEls.push(c);
+    c.addEventListener('mousemove',ev=>{c.classList.remove('dim2');showBubble(ev,`<div class="b-name">${o.sn}</div><div class="b-tick">${o.ticker||''}</div><div class="b-body">Second-degree — linked through ${byId[o.via].sn}.</div><div class="b-score">match ${o.score.toFixed(1)} pts</div>`);});
+    c.addEventListener('mouseleave',()=>{c.classList.add('dim2');hideBubble();});
+    c.addEventListener('click',()=>svg.scrollIntoView({behavior:'smooth'}));
+    reg(o.id,g);});
+  // Fuji centre
+  const fg=el('g',{},ng);
+  const fc=el('circle',{cx:fp.x,cy:fp.y,r:24,class:'map-node',fill:clr()['Contested / hostile bid'],'fill-opacity':0.95,stroke:'var(--washi)','stroke-width':2.5},fg);
+  fc.dataset.id='JP-026';fc.dataset.cg='Contested / hostile bid';fc.dataset.baseR=24;nodeEls.push(fc);
+  el('text',{x:fp.x,y:fp.y-30,'text-anchor':'middle','font-size':13,fill:'var(--ink)','font-family':'var(--serif)','font-weight':600},fg).textContent='Fuji Soft';
+  reg('JP-026',fg);
+  // inner neighbours (bright, labelled)
+  DATA.fuji_neighbors.forEach(o=>{const p=P(o.id);const r=14+o.score/12*8;const g=el('g',{},ng);
+    const c=el('circle',{cx:p.x,cy:p.y,r:r,class:'map-node',fill:clr()[o.cg],'fill-opacity':0.9,stroke:'var(--washi)','stroke-width':2},g);
+    c.dataset.id=o.id;c.dataset.cg=o.cg;c.dataset.baseR=r;nodeEls.push(c);
+    const above=p.y<fp.y;
+    el('text',{x:p.x,y:above?p.y-r-8:p.y+r+15,'text-anchor':'middle','font-size':12,fill:'var(--ink)','font-family':'var(--serif)'},g).textContent=o.sn;
+    el('text',{x:p.x,y:above?p.y-r+4:p.y+r+27,'text-anchor':'middle','font-size':9,fill:'var(--ink-3)','font-family':'var(--mono)'},g).textContent=o.ticker||'';
+    c.addEventListener('mousemove',ev=>{map.focus(['JP-026',o.id]);showBubble(ev,`<div class="b-name">${o.sn}</div><div class="b-tick">${o.ticker||''}</div><div class="b-body">${o.similar3||''}</div><div class="b-score">match ${o.score.toFixed(1)} pts</div>`);});
+    c.addEventListener('mouseleave',()=>{map.clear();hideBubble();});
+    c.addEventListener('click',()=>document.getElementById('case').scrollIntoView({behavior:'smooth'}));
+    reg(o.id,g);});
+  const map=makeMap(nodeEls,edgeEls);
+  // gentle two-frequency bounce (subtle, so labels stay readable)
+  let t0=null;
+  function frame(ts){if(t0===null)t0=ts;const t=(ts-t0)/1000;
+    for(const id in state){const s=state[id],d=s.dr;
+      s.dx=Math.sin(t*d.sx+d.px)*d.ax+Math.sin(t*d.tx+d.qx)*d.bx;
+      s.dy=Math.cos(t*d.sy+d.py)*d.ay+Math.cos(t*d.ty+d.qy)*d.by;
+      s.g.setAttribute('transform',`translate(${s.dx.toFixed(2)} ${s.dy.toFixed(2)})`);}
+    edgeRefs.forEach(e=>{const A=state[e.a],B=state[e.b];if(!A||!B)return;
+      e.l.setAttribute('x1',A.bx+A.dx);e.l.setAttribute('y1',A.by+A.dy);e.l.setAttribute('x2',B.bx+B.dx);e.l.setAttribute('y2',B.by+B.dy);});
+    requestAnimationFrame(frame);}
+  requestAnimationFrame(frame);
+})();
+
+// ================= user guide drawer =================
+(function(){
+  const scrim=document.getElementById('guideScrim'),panel=document.getElementById('guidePanel');
+  const open=()=>{scrim.classList.add('open');panel.classList.add('open');};
+  const close=()=>{scrim.classList.remove('open');panel.classList.remove('open');};
+  document.getElementById('guideBtn').onclick=e=>{e.preventDefault();open();};
+  document.getElementById('guideClose').onclick=close; scrim.onclick=close;
+  addEventListener('keydown',e=>{if(e.key==='Escape')close();});
+})();
+
+// ================= testimonies reveal on scroll =================
+(function(){
+  if(!(window.gsap&&window.ScrollTrigger))return;
+  gsap.utils.toArray('#testimonies .quote').forEach(q=>{
+    gsap.from(q,{autoAlpha:0,y:24,duration:.7,scrollTrigger:{trigger:q,start:'top 85%'}});
+  });
+})();
+
+applyTheme();
+</script>
+</body>
+</html>
