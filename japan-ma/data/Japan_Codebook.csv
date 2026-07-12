@@ -79,25 +79,28 @@ category_code,76,Parent buy-in TOB (appraisal landmark — court raised price)
 category_code,77,Parent carve-out / PE TOB
 category_code,78,Parent carve-out TOB (sponsor-backed strategic)
 category_code,79,Parent carve-out TOB (strategic auction; leveraged)
-category_code,80,Parent-subsidiary buy-in (mega TOB)
-category_code,81,Parent-subsidiary buy-in TOB (2020 wave)
-category_code,82,Parent-subsidiary buy-in TOB (activist-forced revision)
-category_code,83,Parent-subsidiary merger (contested exchange ratio — appraisal template)
-category_code,84,Parent-subsidiary minority buy-in
-category_code,85,Parent-subsidiary minority buy-in (mega)
-category_code,86,Strategic TOB (JV take-private of listed sub)
-category_code,87,Strategic TOB (affiliate consolidation) with price bump
-category_code,88,Strategic TOB (long-gestation parent exit)
-category_code,89,Strategic acquisition proposal (semis)
-category_code,90,"Subsidiary divestiture (PE, special situation)"
-category_code,91,Take-private (PE/consortium)
-category_code,92,"Take-private (state-backed consortium, carve-out of listed sub)"
-category_code,93,Take-private (state-backed fund)
-category_code,94,Take-private TOB (opposed strategic blockholder)
-category_code,95,Third-party TOB for listed subsidiary (parent sells)
-category_code,96,Unsolicited proposal + proxy fights (family office)
-category_code,97,Unsolicited/consentless TOB (domestic strategic)
-category_code,98,White-knight take-private (PE)
+category_code,80,Parent divestiture via partial TOB to a foreign strategic (novel counter-TOB carve-out)
+category_code,81,Parent-subsidiary buy-in (mega TOB)
+category_code,82,Parent-subsidiary buy-in TOB (2020 wave)
+category_code,83,Parent-subsidiary buy-in TOB (activist-catalyzed; large SC-driven bump)
+category_code,84,Parent-subsidiary buy-in TOB (activist-forced revision)
+category_code,85,Parent-subsidiary buy-in TOB (completing a multi-stage control arc)
+category_code,86,Parent-subsidiary merger (contested exchange ratio — appraisal template)
+category_code,87,Parent-subsidiary minority buy-in
+category_code,88,Parent-subsidiary minority buy-in (mega)
+category_code,89,Strategic TOB (JV take-private of listed sub)
+category_code,90,Strategic TOB (affiliate consolidation) with price bump
+category_code,91,Strategic TOB (long-gestation parent exit)
+category_code,92,Strategic acquisition proposal (semis)
+category_code,93,"Subsidiary divestiture (PE, special situation)"
+category_code,94,Take-private (PE/consortium)
+category_code,95,"Take-private (state-backed consortium, carve-out of listed sub)"
+category_code,96,Take-private (state-backed fund)
+category_code,97,Take-private TOB (opposed strategic blockholder)
+category_code,98,Third-party TOB for listed subsidiary (parent sells)
+category_code,99,Unsolicited proposal + proxy fights (family office)
+category_code,100,Unsolicited/consentless TOB (domestic strategic)
+category_code,101,White-knight take-private (PE)
 category_group_code,0,(blank)
 category_group_code,1,Activist campaign
 category_group_code,2,Contested / hostile bid

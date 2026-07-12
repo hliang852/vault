@@ -1,0 +1,37 @@
+name: japan-ma-promote   # Track 2 -> Track 1: the ONLY path onto Japan_Master.csv from the scanner
+on:
+  workflow_dispatch:
+    inputs:
+      record_id:
+        description: "Japan_new.csv Record ID to promote, e.g. JPN-003"
+        required: true
+        type: string
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: japan-ma
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pandas
+      - name: Promote record (appends to Japan_Master.csv, regenerates Japan.csv)
+        run: python pipeline/promote_deal.py "${{ inputs.record_id }}" --yes
+      - name: Open pull request for review (no auto-publish)
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: promote/${{ github.run_id }}
+          title: "Promote ${{ inputs.record_id }} to Japan_Master.csv"
+          commit-message: "promote: ${{ inputs.record_id }}"
+          body: |
+            Promotes **${{ inputs.record_id }}** from `Japan_new.csv` to `Japan_Master.csv`.
+            `Japan.csv` was auto-regenerated in this same PR (transform gates passed).
+            Review checklist:
+            - [ ] Row belongs in the landmark knowledge bank (criteria C1-C6, per Japan_Landmark_Criteria.md)
+            - [ ] Citation still valid / primary source still accessible
+            - [ ] No duplicate of an existing row

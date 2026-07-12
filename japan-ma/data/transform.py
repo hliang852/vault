@@ -388,17 +388,6 @@ def main():
     o.to_csv(out_csv, index=False, encoding="utf-8-sig")
     with open(f"{a.outdir}/Japan_Codebook.csv", "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f); w.writerow(["field", "code", "label"]); w.writerows(codebook)
-    # masterfile.xlsx — formatted Excel mirror of the human-readable master
-    try:
-        with pd.ExcelWriter(f"{a.outdir}/masterfile.xlsx", engine="openpyxl") as xw:
-            m.to_excel(xw, sheet_name="Japan_Master", index=False)
-            ws = xw.sheets["Japan_Master"]
-            ws.freeze_panes = "A2"
-            for col_cells in ws.columns:
-                width = min(60, max(10, max(len(str(c.value)) for c in col_cells if c.value) + 2))
-                ws.column_dimensions[col_cells[0].column_letter].width = width
-    except ImportError:
-        print("masterfile.xlsx SKIPPED (openpyxl not installed — pip install openpyxl)")
     if a.dated:
         o.to_csv(f"{a.outdir}/Japan_{datetime.date.today().isoformat()}.csv", index=False, encoding="utf-8-sig")
     print(f"OK: {len(o)} rows x {len(o.columns)} cols -> {out_csv}; codebook {len(codebook)} entries")

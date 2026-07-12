@@ -1,0 +1,39 @@
+name: add-deal   # THE ONE BUTTON — Actions tab -> add-deal -> Run workflow
+on:
+  workflow_dispatch:
+    inputs:
+      deal_mention:
+        description: "Deal mention (e.g. 'Kakaku.com EQT LY Bain contest')"
+        required: true
+        type: string
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  research-and-propose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pandas
+      - name: Independent research -> populate master row
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python pipeline/intake_agent.py "${{ inputs.deal_mention }}"
+      - name: Rebuild Japan.csv (pipeline)
+        run: |
+          python pipeline/transform.py --master data/Japan_Master.csv --outdir data
+      - name: Open pull request for human review (no auto-promotion)
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: intake/${{ github.run_id }}
+          title: "Intake: ${{ inputs.deal_mention }}"
+          commit-message: "intake agent: ${{ inputs.deal_mention }}"
+          body: |
+            One-button intake result for: **${{ inputs.deal_mention }}**
+            Review checklist (per Japan_Landmark_Criteria.md §5):
+            - [ ] Source URL 1 is a primary source and supports the row
+            - [ ] Announce date is the formal announcement, not the leak
+            - [ ] TBV discipline respected (no invented values)
+            - [ ] Landmark criteria (C1–C6) justification in Notes is sound
