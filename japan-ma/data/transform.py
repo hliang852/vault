@@ -378,6 +378,31 @@ def main():
         o[f"source_url_{i}"] = raw.map(lambda s: (re.search(r"https?://\S+", s).group(0).rstrip(")") if re.search(r"https?://\S+", s) else ""))
     o["is_fully_cited"] = o["source_url_1"].str.startswith("http")
 
+    # ---- Part 2 derived features (v4): mechanical booleans consumed by the
+    #      downstream similarity engine (src/cluster/precedent_engine.py at the
+    #      repo root). Rules mirror docs/Japan_User_Guide.md §2 exactly and were
+    #      verified to reproduce the pre-integration 62-row file bit-for-bit.
+    #      No new facts: each is a mechanical recoding of columns built above.
+    # clean boolean: True only where price_was_bumped is literally "True"
+    # (the source column is mixed-type -- "True"/"False"/"Unclear/TBV"/"" --
+    # so it is unsafe to feed directly into boolean logic)
+    o["price_was_bumped_bool"] = o["price_was_bumped"].map(lambda v: str(v) == "True")
+    o["multi_jurisdiction"] = o["num_regulators"] >= 2
+    # soft keyword flag, not a verified judgment that the deal set a precedent
+    o["notes_flags_precedent_setting"] = o["notes_raw"].str.contains(
+        r"first|template|precedent|proof-of-concept|landmark|signature", case=False, regex=True)
+    # regulatory-timeline overlay: announce date on/after each rule's real-world
+    # effective date (ISO string compare is safe: dates are ISO and gated non-empty)
+    o["timeline_post_meti_2023_guideline"] = o["date_announced"] >= "2023-08-31"   # METI takeover guidelines
+    o["timeline_post_tse_reform_2023"] = o["date_announced"] >= "2023-03-31"       # TSE cost-of-capital request
+    o["timeline_post_fiea_2026_amendment"] = o["date_announced"] >= "2026-05-01"   # FIEA mandatory-TOB amendment
+    # consolidated pair-features (empirical rationale in Japan_User_Guide.md §2:
+    # scored as one shared fact each in the similarity engine, to avoid
+    # double-counting; the source columns above stay independently usable)
+    o["has_dual_antitrust_review"] = o["has_JFTC"] & o["has_DOJ_FTC_HSR"]
+    o["timeline_post_2023_reforms"] = (o["timeline_post_meti_2023_guideline"]
+                                       & o["timeline_post_tse_reform_2023"])
+
     # ---- integrity gates -------------------------------------------------
     assert len(o) == len(m)
     assert o["deal_id"].is_unique
@@ -388,6 +413,17 @@ def main():
     o.to_csv(out_csv, index=False, encoding="utf-8-sig")
     with open(f"{a.outdir}/Japan_Codebook.csv", "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f); w.writerow(["field", "code", "label"]); w.writerows(codebook)
+    # masterfile.xlsx — formatted Excel mirror of the human-readable master
+    try:
+        with pd.ExcelWriter(f"{a.outdir}/masterfile.xlsx", engine="openpyxl") as xw:
+            m.to_excel(xw, sheet_name="Japan_Master", index=False)
+            ws = xw.sheets["Japan_Master"]
+            ws.freeze_panes = "A2"
+            for col_cells in ws.columns:
+                width = min(60, max(10, max(len(str(c.value)) for c in col_cells if c.value) + 2))
+                ws.column_dimensions[col_cells[0].column_letter].width = width
+    except ImportError:
+        print("masterfile.xlsx SKIPPED (openpyxl not installed — pip install openpyxl)")
     if a.dated:
         o.to_csv(f"{a.outdir}/Japan_{datetime.date.today().isoformat()}.csv", index=False, encoding="utf-8-sig")
     print(f"OK: {len(o)} rows x {len(o.columns)} cols -> {out_csv}; codebook {len(codebook)} entries")

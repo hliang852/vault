@@ -30,7 +30,9 @@ pd.set_option('display.max_colwidth', 120)
 
 # %%
 def load_data() -> pd.DataFrame:
-    for path in (Path('data/Japan.csv'), Path('../data/Japan.csv'), Path('Japan.csv')):
+    # canonical file first (Part 1 output); archived 62-row snapshot second
+    for path in (Path('japan-ma/data/Japan.csv'), Path('../japan-ma/data/Japan.csv'),
+                 Path('data/Japan.csv'), Path('../data/Japan.csv'), Path('Japan.csv')):
         if path.exists():
             return pd.read_csv(path, encoding='utf-8-sig')
     try:

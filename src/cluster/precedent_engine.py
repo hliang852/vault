@@ -27,7 +27,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from axes import compute_axes  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-INPUT_CSV = REPO_ROOT / 'data' / 'Japan.csv'
+# canonical analysis file: produced by Part 1 (japan-ma/pipeline/transform.py);
+# the pre-integration 62-row snapshot is archived at data/Japan.csv
+INPUT_CSV = REPO_ROOT / 'japan-ma' / 'data' / 'Japan.csv'
 OUTPUT_JSON = REPO_ROOT / 'output' / 'precedent_graph_data.json'
 
 df = pd.read_csv(INPUT_CSV, encoding='utf-8-sig')
@@ -80,9 +82,11 @@ BOOLEAN_FEATURES = {
     #    an empirical Jaccard/lift review found were double-counting correlated
     #    facts (see docs/Architecture.md and docs/To-do.md for the full analysis):
     'has_dual_antitrust_review': 0.5,   # was has_JFTC (0.1) + has_DOJ_FTC_HSR (1.0) scored separately;
-    # lift analysis showed these correlate above base rate (1.37-1.54x) -- has_JFTC's True set was an exact
-    # subset of has_DOJ_FTC_HSR's in this corpus, so consolidated to "both true" (39/62), weight roughly
-    # split the difference rather than keep double-scoring one underlying "faces antitrust review" fact.
+    # consolidated 2026-07-07 on the 62-case corpus (where has_JFTC's True set was an exact subset of
+    # has_DOJ_FTC_HSR's, lift 1.37-1.54x). Under the integrated 110-case corpus's regulator recoding the
+    # subset relationship no longer holds (49 JFTC-only / 8 DOJ-only / 4 dual) -- maintainer decision
+    # 2026-07-12: KEEP consolidated. "Both true" is now a genuinely rare (4/110) dual-review signal;
+    # has_JFTC / has_DOJ_FTC_HSR remain individual columns in Japan.csv, just not separately scored.
     'timeline_post_2023_reforms': 0.1,  # was timeline_post_meti_2023_guideline (0.1) + timeline_post_tse_reform_2023
     # (0.1) scored separately (Jaccard 0.93, though lift was only 1.09x -- mostly a base-rate artifact of both
     # being common, not genuine redundancy; consolidated anyway per a maintainer caution call). "Both true" (53/62,

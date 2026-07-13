@@ -2,6 +2,16 @@
 
 Timestamped log of manual verification items and decisions that need the maintainer's attention. Not auto-resolved by any script.
 
+## 2026-07-12 -- Part 2 weight review after the corpus shift (62 -> 110, japan-ma canonical)
+
+The similarity weights and graph parameters were all judgment calls calibrated on the old 62-case, 2023–2026 corpus. The integrated corpus is 110 cases spanning 2015–2026 with re-verified/recoded source cells. Nothing was silently retuned — these need a maintainer pass:
+
+- ~~**`has_dual_antitrust_review` (0.5) rationale no longer holds.**~~ **Decided 2026-07-12: keep consolidated.** The feature is now a genuinely rare (4/110) dual-review signal rather than a redundancy fix; `has_JFTC`/`has_DOJ_FTC_HSR` remain individually usable columns, just not separately scored. Engine comment updated to the new rationale.
+- **Rarity-grounded weights drifted.** e.g. `price_was_bumped_bool` was 7/62 (11%) when weighted 1.0; it's now 22/110 (20%). `notes_flags_precedent_setting` was 7/62 — re-check under the rewritten notes. Re-run the notebook's rarity/lift diagnostics on the 110-case corpus and adjust any weight whose rationale changed materially.
+- **Graph parameters were tuned at n=62.** `TOP_K=4` / `MIN_SCORE=1.5` (viewer trim) still render legibly at n=110 (321 edges), but check in the browser. `COMMUNITY_MIN_SCORE=7.0` / `K_CLIQUE=3` now yields 11 communities (sizes [16,6,4,4,4,4,4,3,3,3,3], 46/110 covered) — arguably healthier than the old 5, but review whether the thresholds still express the intended "unusually tight cluster" bar.
+- **`timeline_post_2023_reforms` is now genuinely discriminating** (the corpus reaches back to 2015, so roughly half the rows predate the reforms, vs 9/62 before) — its 0.1 "near-universal" weight tier may deserve a rethink.
+- ~~**Stale duplicate: `japan-ma/data/transform.py`**~~ **Decided 2026-07-12: synced.** The `data/` copy is now byte-identical to the canonical `japan-ma/pipeline/transform.py` (the stale copy was verified to be a strict ancestor — no unique content — before overwriting, and the synced copy's output was verified identical to the canonical's). Convention going forward: **edit only `pipeline/transform.py`**, then re-copy to `data/` if the mirror is kept; `pipeline/` remains authoritative per japan-ma's README.
+
 ## 2026-07-09 -- Part 3 mockup v4 (design-elevation pass)
 
 - **Licensed logo assets needed for the mega-deal emblem nodes.** The mockup renders the ~10 biggest deals as monogram emblems (company initials) because actual brand logos are trademarked and can't be reproduced by us. Decide whether to (a) license/source official logo SVGs per company, (b) keep the monogram emblem style as the permanent design, or (c) some hybrid. If real logos, they become another per-case content asset — consider adding a `logo` field to `Case_Content_Spec.md`.

@@ -204,7 +204,9 @@ def make_visualizations(df: pd.DataFrame, figures_dir: Path):
 
 def main():
     parser = argparse.ArgumentParser(description='Part 1: data exploration & visualization for Japan.csv')
-    parser.add_argument('--input', type=Path, default=REPO_ROOT / 'data' / 'Japan.csv')
+    # canonical analysis file: produced by Part 1 (japan-ma/pipeline/transform.py);
+    # the pre-integration 62-row snapshot is archived at data/Japan.csv
+    parser.add_argument('--input', type=Path, default=REPO_ROOT / 'japan-ma' / 'data' / 'Japan.csv')
     parser.add_argument('--output-dir', type=Path, default=REPO_ROOT / 'output')
     args = parser.parse_args()
 
